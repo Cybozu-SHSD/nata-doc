@@ -33,9 +33,14 @@ This project is automatically deployed to **GitHub Pages** using **GitHub Action
 
 ### GitHub Pages Setup
 
-1. Go to repository **Settings** → **Pages**
-2. Set **Source** to **GitHub Actions**
-3. The workflow (`.github/workflows/deploy.yml`) handles the rest automatically
+**Important**: Before the first deployment, you need to configure GitHub Pages:
+
+1. Go to your repository **Settings** → **Pages**
+2. Under **Build and deployment**:
+   - Set **Source** to **GitHub Actions** (not "Deploy from a branch")
+3. The workflow (`.github/workflows/deploy.yml`) will handle the rest automatically
+
+Once configured, every push to `main` will trigger automatic deployment.
 
 ## Project Structure
 
