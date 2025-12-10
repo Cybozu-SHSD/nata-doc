@@ -21,14 +21,14 @@ export function VPCOverviewArchitecture() {
           icon={<UserCircle size={20} />}
           role="End User"
           description="Use applications"
-          targets={["Tenant (Data Plane)"]}
+          targets={["Broker", "Tenant (Data Plane)"]}
           color="blue"
         />
         <UserAccessCard 
           icon={<Settings size={20} />}
           role="Admin"
           description="Manage tenants & config"
-          targets={["Tenant Management", "Broker"]}
+          targets={["Tenant Management"]}
           color="purple"
         />
         <UserAccessCard 
