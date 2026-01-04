@@ -159,7 +159,7 @@ export function ClusterManagementArchitecture() {
                       ns: {ns}
                     </h5>
                     <div className="flex flex-wrap gap-1">
-                      {["Kong", "GoTrue", "PostgREST", "Realtime", "Storage", "PG"].map((s) => (
+                      {["Main", "Worker", "Routine", "FTS"].map((s) => (
                         <span key={s} className="text-[8px] bg-data-plane/20 px-1.5 py-0.5 rounded">{s}</span>
                       ))}
                     </div>

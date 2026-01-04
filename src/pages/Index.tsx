@@ -1,22 +1,18 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Layers,
-  Shield,
+import { 
+  Layers, 
+  Shield, 
   Cloud,
   Users,
   BarChart3,
   ChevronRight,
   Network,
   Server,
-  Container,
-  Github,
+  Container
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  BrokerSequenceDiagram,
-  TokenCards,
-} from "@/components/architecture/BrokerSequenceDiagram";
+import { BrokerSequenceDiagram, TokenCards } from "@/components/architecture/BrokerSequenceDiagram";
 import { TenantPlatformArchitecture } from "@/components/architecture/TenantPlatformArchitecture";
 import { ClusterManagementArchitecture } from "@/components/architecture/ClusterManagementArchitecture";
 import { CloudServicesTable } from "@/components/architecture/CloudServicesTable";
@@ -25,22 +21,14 @@ import { BrokerFCArchitecture } from "@/components/architecture/BrokerFCArchitec
 import { APIPlatformArchitecture } from "@/components/architecture/APIPlatformArchitecture";
 import { DataPlaneArchitecture } from "@/components/architecture/DataPlaneArchitecture";
 
-type SystemTab =
-  | "overview"
-  | "broker"
-  | "tenant"
-  | "cluster"
-  | "api"
-  | "dataPlane"
-  | "cloud";
+type SystemTab = "overview" | "broker" | "tenant" | "cluster" | "api" | "dataPlane" | "cloud";
 
 const systemCards = [
   {
     id: "dataPlane" as SystemTab,
     icon: Container,
     title: "Tenant (Data Plane)",
-    description:
-      "Mini Program, PC, iOS (App), Android (App) multi-client architecture",
+    description: "Mini Program, PC, iOS (App), Android (App) multi-client architecture",
     color: "bg-data-plane",
   },
   {
@@ -54,8 +42,7 @@ const systemCards = [
     id: "broker" as SystemTab,
     icon: Shield,
     title: "Broker System",
-    description:
-      "Unified OAuth login proxy, redirects to tenant apps after auth",
+    description: "Unified OAuth login proxy, redirects to tenant apps after auth",
     color: "bg-broker",
   },
   {
@@ -69,8 +56,7 @@ const systemCards = [
     id: "api" as SystemTab,
     icon: Server,
     title: "API Platform (Future Plan)",
-    description:
-      "Developer portal with unified API gateway for external access",
+    description: "Developer portal with unified API gateway for external access",
     color: "bg-api",
   },
 ];
@@ -83,46 +69,20 @@ const Index = () => {
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-control-plane flex items-center justify-center">
-                <Layers size={20} className="text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="font-bold text-lg">Lowcode Cloud Platform</h1>
-                <p className="text-xs text-muted-foreground">
-                  Multi-Tenant Architecture on Alibaba Cloud
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-control-plane flex items-center justify-center">
+              <Layers size={20} className="text-primary-foreground" />
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                Alibaba Cloud
-              </Badge>
-              <a
-                href="https://github.com/Cybozu-SHSD/Lowcode-Cloud-Platform-Architecture"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1"
-              >
-                <Badge
-                  variant="secondary"
-                  className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
-                >
-                  <Github size={12} className="mr-1" />
-                  GitHub
-                </Badge>
-              </a>
+            <div>
+              <h1 className="font-bold text-lg">NeZha</h1>
+              <p className="text-xs text-muted-foreground">Multi-Tenant Architecture</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Hero with System Cards as Tabs */}
-      <section
-        className="py-8 border-b"
-        style={{ background: "var(--gradient-hero)" }}
-      >
+      <section className="py-8 border-b" style={{ background: "var(--gradient-hero)" }}>
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <Badge className="mb-3 bg-control-plane text-primary-foreground text-xs">
@@ -141,8 +101,8 @@ const Index = () => {
               className={cn(
                 "w-full mb-4 text-left rounded-xl p-4 border-2 transition-all duration-200",
                 "hover:shadow-lg",
-                activeTab === "overview"
-                  ? "bg-card border-primary shadow-md"
+                activeTab === "overview" 
+                  ? "bg-card border-primary shadow-md" 
                   : "bg-card/60 backdrop-blur border-transparent hover:border-border"
               )}
             >
@@ -153,23 +113,19 @@ const Index = () => {
                   </div>
                   <div>
                     <span className="font-semibold">VPC Overview</span>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      - All systems deployment overview
-                    </span>
+                    <span className="text-xs text-muted-foreground ml-2">- All systems deployment overview</span>
                   </div>
                 </div>
-                <ChevronRight
-                  size={16}
+                <ChevronRight 
+                  size={16} 
                   className={cn(
                     "transition-transform",
-                    activeTab === "overview"
-                      ? "rotate-90 text-primary"
-                      : "text-muted-foreground"
-                  )}
+                    activeTab === "overview" ? "rotate-90 text-primary" : "text-muted-foreground"
+                  )} 
                 />
               </div>
             </button>
-
+            
             {/* System Cards as Clickable Tabs */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
               {systemCards.map((system) => {
@@ -182,36 +138,27 @@ const Index = () => {
                     className={cn(
                       "text-left rounded-xl p-4 border-2 transition-all duration-200",
                       "hover:shadow-lg hover:-translate-y-0.5",
-                      isActive
-                        ? "bg-card border-primary shadow-md"
+                      isActive 
+                        ? "bg-card border-primary shadow-md" 
                         : "bg-card/60 backdrop-blur border-transparent hover:border-border"
                     )}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center",
-                            system.color
-                          )}
-                        >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", system.color)}>
                           <Icon size={16} className="text-primary-foreground" />
                         </div>
-                        <span className="font-semibold">{system.title}</span>
+                        <span className="font-semibold text-sm leading-tight">{system.title}</span>
                       </div>
-                      <ChevronRight
-                        size={16}
+                      <ChevronRight 
+                        size={16} 
                         className={cn(
                           "transition-transform",
-                          isActive
-                            ? "rotate-90 text-primary"
-                            : "text-muted-foreground"
-                        )}
+                          isActive ? "rotate-90 text-primary" : "text-muted-foreground"
+                        )} 
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {system.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{system.description}</p>
                   </button>
                 );
               })}
@@ -223,8 +170,8 @@ const Index = () => {
               className={cn(
                 "w-full mt-4 text-left rounded-xl p-3 border-2 transition-all duration-200",
                 "hover:shadow-lg",
-                activeTab === "cloud"
-                  ? "bg-card border-primary shadow-md"
+                activeTab === "cloud" 
+                  ? "bg-card border-primary shadow-md" 
                   : "bg-card/60 backdrop-blur border-transparent hover:border-border"
               )}
             >
@@ -234,18 +181,14 @@ const Index = () => {
                     <Cloud size={14} className="text-muted-foreground" />
                   </div>
                   <span className="font-medium text-sm">Cloud Services</span>
-                  <span className="text-xs text-muted-foreground">
-                    - Infrastructure service selection and upgrade paths
-                  </span>
+                  <span className="text-xs text-muted-foreground">- Infrastructure service selection and upgrade paths</span>
                 </div>
-                <ChevronRight
-                  size={14}
+                <ChevronRight 
+                  size={14} 
                   className={cn(
                     "transition-transform",
-                    activeTab === "cloud"
-                      ? "rotate-90 text-primary"
-                      : "text-muted-foreground"
-                  )}
+                    activeTab === "cloud" ? "rotate-90 text-primary" : "text-muted-foreground"
+                  )} 
                 />
               </div>
             </button>
@@ -260,20 +203,16 @@ const Index = () => {
           {activeTab === "overview" && (
             <div className="animate-slide-in space-y-6">
               <div>
-                <h3 className="text-lg font-semibold">
-                  VPC Deployment Overview
-                </h3>
+                <h3 className="text-lg font-semibold">VPC Deployment Overview</h3>
                 <p className="text-sm text-muted-foreground">
                   All systems deployed within Alibaba Cloud VPC
                 </p>
               </div>
-
+              
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm">
                 <p>
-                  The platform is deployed in an{" "}
-                  <strong>Alibaba Cloud VPC</strong> with 5 systems: Tenant
-                  Management, Broker (FC), API Platform, Tenant (Data Plane),
-                  and Observability.
+                  The platform is deployed in a <strong>VPC</strong> with 5 systems:
+                  Tenant Management, Broker (FC), API Platform, Tenant (Data Plane), and Observability.
                 </p>
               </div>
 
@@ -287,26 +226,20 @@ const Index = () => {
           {activeTab === "broker" && (
             <div className="animate-slide-in space-y-6">
               <div>
-                <h3 className="text-lg font-semibold">
-                  Broker System (FC Serverless)
-                </h3>
+                <h3 className="text-lg font-semibold">Broker System (FC Serverless)</h3>
                 <p className="text-sm text-muted-foreground">
-                  Unified OAuth authentication proxy based on Alibaba Cloud
-                  Function Compute
+                  Unified OAuth authentication proxy based on Alibaba Cloud Function Compute
                 </p>
               </div>
-
+              
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm space-y-3">
                 <p>
-                  The <strong>Broker</strong> is implemented using Alibaba Cloud
-                  FC (Function Compute), providing a serverless OAuth proxy
-                  service. It handles the OAuth flow with various identity
-                  providers (Microsoft, WeChat, DingTalk) and redirects users
-                  back to their tenant applications with a secure handoff token.
+                  The <strong>Broker</strong> is implemented using Function Compute (FC), providing a serverless OAuth proxy service.
+                  It handles the OAuth flow with various identity providers (Microsoft, WeChat, DingTalk) 
+                  and redirects users back to their tenant applications with a secure handoff token.
                 </p>
                 <p>
-                  <strong>Design Highlights:</strong> Pay-per-use with zero cost
-                  when idle; auto-scaling to handle traffic spikes.
+                  <strong>Design Highlights:</strong> Pay-per-use with zero cost when idle; auto-scaling to handle traffic spikes.
                 </p>
               </div>
 
@@ -315,51 +248,33 @@ const Index = () => {
               </div>
 
               <div>
-                <h4 className="font-semibold text-sm mb-3">
-                  OAuth Flow (UML Sequence Diagram)
-                </h4>
+                <h4 className="font-semibold text-sm mb-3">OAuth Flow (UML Sequence Diagram)</h4>
                 <BrokerSequenceDiagram />
               </div>
 
               <div>
-                <h4 className="font-semibold text-sm mb-3">
-                  Token Specifications
-                </h4>
+                <h4 className="font-semibold text-sm mb-3">Token Specifications</h4>
                 <TokenCards />
               </div>
 
               <div className="bg-secondary/30 rounded-xl p-5 border">
-                <h4 className="font-semibold mb-3 text-sm">
-                  Key Design Points
-                </h4>
+                <h4 className="font-semibold mb-3 text-sm">Key Design Points</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                   <div className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-broker mt-1.5 shrink-0" />
-                    <span>
-                      <strong>Single Callback URL</strong> - All tenants share
-                      one OAuth callback, simplifying IdP config
-                    </span>
+                    <span><strong>Single Callback URL</strong> - All tenants share one OAuth callback, simplifying IdP config</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-broker mt-1.5 shrink-0" />
-                    <span>
-                      <strong>Stateless</strong> - Context encoded in JWT
-                      tokens, no server-side sessions
-                    </span>
+                    <span><strong>Stateless</strong> - Context encoded in JWT tokens, no server-side sessions</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-broker mt-1.5 shrink-0" />
-                    <span>
-                      <strong>Key Separation</strong> - Broker uses RSA, tenants
-                      use their own HS256 secrets
-                    </span>
+                    <span><strong>Key Separation</strong> - Broker uses RSA, tenants use their own HS256 secrets</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-broker mt-1.5 shrink-0" />
-                    <span>
-                      <strong>Adapter Pattern</strong> - Easy to add new OAuth
-                      providers
-                    </span>
+                    <span><strong>Adapter Pattern</strong> - Easy to add new OAuth providers</span>
                   </div>
                 </div>
               </div>
@@ -370,26 +285,20 @@ const Index = () => {
           {activeTab === "tenant" && (
             <div className="animate-slide-in space-y-6">
               <div>
-                <h3 className="text-lg font-semibold">
-                  Tenant Management Platform（Control Plane）
-                </h3>
+                <h3 className="text-lg font-semibold">Tenant Management Platform（Control Plane）</h3>
                 <p className="text-sm text-muted-foreground">
-                  Control plane for tenant provisioning, scaling, and lifecycle
-                  management
+                  Control plane for tenant provisioning, scaling, and lifecycle management
                 </p>
               </div>
-
+              
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm space-y-3">
                 <p>
-                  The <strong>Tenant Platform</strong> is the control plane
-                  responsible for managing tenant lifecycles. It handles tenant
-                  creation, scaling, suspension, and deletion through Kubernetes
-                  orchestration.
+                  The <strong>Tenant Platform</strong> is the control plane responsible for managing tenant lifecycles. 
+                  It handles tenant creation, scaling, suspension, and deletion through Kubernetes orchestration.
                 </p>
                 <p>
-                  Platform admins use the Console to manage tenants, while the
-                  Deploy Service interacts with the ACK cluster to provision
-                  isolated Supabase stacks for each tenant.
+                  Platform admins use the Console to manage tenants, while the Deploy Service interacts with the 
+                  K8s cluster to provision isolated application stacks for each tenant.
                 </p>
               </div>
 
@@ -408,18 +317,16 @@ const Index = () => {
                   Developer portal with unified API gateway for external access
                 </p>
               </div>
-
+              
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm space-y-3">
                 <p>
-                  The <strong>API Platform</strong> provides a developer portal
-                  for external integrations. It includes subdomain allocation
-                  per tenant, project-based token management, and a unified API
-                  gateway with permission-based routing.
+                  The <strong>API Platform</strong> provides a developer portal for external integrations.
+                  It includes subdomain allocation per tenant, project-based token management, 
+                  and a unified API gateway with permission-based routing.
                 </p>
                 <p>
-                  <strong>Key Feature:</strong> Project-based token mechanism -
-                  one token manages multiple app permissions, unlike app-based
-                  systems where each app requires separate token configuration.
+                  <strong>Key Feature:</strong> Project-based token mechanism - one token manages multiple app permissions,
+                  unlike app-based systems where each app requires separate token configuration.
                 </p>
               </div>
 
@@ -438,17 +345,15 @@ const Index = () => {
                   Internal architecture within each tenant application
                 </p>
               </div>
-
+              
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm space-y-3">
                 <p>
-                  Each tenant runs a <strong>standalone backend</strong> built
-                  with NestJS, serving all frontend clients (Web, Mobile, Mini
-                  Programs, Third-party).
+                  Each tenant runs a <strong>standalone backend</strong> built with NestJS, 
+                  serving all frontend clients (Web, Mobile, Mini Programs, Third-party).
                 </p>
                 <p>
-                  It includes ALB Gateway for load balancing, multi-layer
-                  architecture with authorization (OSO/Polar), and connects to
-                  tenant-specific managed data services.
+                  It includes ALB Gateway for load balancing, multi-layer architecture with authorization (OSO/Polar), 
+                  and connects to tenant-specific managed data services.
                 </p>
               </div>
 
@@ -467,18 +372,16 @@ const Index = () => {
                   Observability stack for logging, monitoring, and alerting
                 </p>
               </div>
-
+              
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm space-y-3">
                 <p>
-                  The <strong>Cluster Management</strong> system provides
-                  observability across both control plane and data plane
-                  workloads. It collects metrics and logs from all services and
-                  provides dashboards for operators to monitor system health.
+                  The <strong>Cluster Management</strong> system provides observability across both control plane 
+                  and data plane workloads. It collects metrics and logs from all services and provides dashboards 
+                  for operators to monitor system health.
                 </p>
                 <p>
-                  This system is used by the SRE/Ops team and is independent of
-                  tenant-facing functionality. It can be upgraded from
-                  ACK-native Prometheus to ARMS as the platform scales.
+                  This system is used by the SRE/Ops team and is independent of tenant-facing functionality. 
+                  It can be upgraded from ACK-native Prometheus to ARMS as the platform scales.
                 </p>
               </div>
 
@@ -492,9 +395,7 @@ const Index = () => {
           {activeTab === "cloud" && (
             <div className="animate-slide-in space-y-6">
               <div>
-                <h3 className="text-lg font-semibold">
-                  Alibaba Cloud Services
-                </h3>
+                <h3 className="text-lg font-semibold">Alibaba Cloud Services</h3>
                 <p className="text-sm text-muted-foreground">
                   Infrastructure service selection and upgrade paths
                 </p>
@@ -502,11 +403,9 @@ const Index = () => {
 
               <div className="bg-secondary/30 rounded-xl p-5 border text-sm space-y-3">
                 <p>
-                  All three systems are deployed on{" "}
-                  <strong>Alibaba Cloud</strong> infrastructure, leveraging
-                  managed services to reduce operational overhead. Each service
-                  is selected for minimal viable functionality with a clear
-                  upgrade path.
+                  All systems are deployed on <strong>Cloud</strong> infrastructure, leveraging 
+                  managed services to reduce operational overhead. Each service is selected for minimal viable 
+                  functionality with a clear upgrade path.
                 </p>
               </div>
 
@@ -516,32 +415,6 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t py-6 mt-8 bg-card/80">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-control-plane flex items-center justify-center">
-                <Layers size={16} className="text-primary-foreground" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">Lowcode Cloud Platform</p>
-                <p className="text-xs text-muted-foreground">
-                  Multi-Tenant Architecture on Alibaba Cloud
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                Alibaba Cloud
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                Supabase
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

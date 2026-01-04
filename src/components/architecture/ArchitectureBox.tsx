@@ -5,28 +5,34 @@ interface ArchitectureBoxProps {
   title: string;
   subtitle?: string;
   children?: ReactNode;
-  variant?: "control" | "data" | "broker" | "storage" | "neutral" | "external";
+  variant?: "control" | "data" | "broker" | "storage" | "neutral" | "external" | "worker" | "routine" | "fts";
   className?: string;
   icon?: ReactNode;
   size?: "sm" | "md" | "lg";
 }
 
-const variantStyles = {
+const variantStyles: Record<string, string> = {
   control: "border-control-plane bg-control-plane-light/50",
   data: "border-data-plane bg-data-plane-light/50",
   broker: "border-broker bg-broker-light/50",
   storage: "border-storage bg-storage-light/50",
   neutral: "border-border bg-card",
   external: "border-dashed border-muted-foreground/50 bg-muted/30",
+  worker: "border-worker bg-worker-light/50",
+  routine: "border-routine bg-routine-light/50",
+  fts: "border-fts bg-fts-light/50",
 };
 
-const variantIconBg = {
+const variantIconBg: Record<string, string> = {
   control: "bg-control-plane text-primary-foreground",
   data: "bg-data-plane text-accent-foreground",
   broker: "bg-broker text-primary-foreground",
   storage: "bg-storage text-primary-foreground",
   neutral: "bg-muted text-muted-foreground",
   external: "bg-muted text-muted-foreground",
+  worker: "bg-worker text-primary-foreground",
+  routine: "bg-routine text-primary-foreground",
+  fts: "bg-fts text-primary-foreground",
 };
 
 const sizeStyles = {
@@ -71,7 +77,37 @@ export function ArchitectureBox({
   );
 }
 
-// Standard architecture diagram connector
+// Zone component for grouping
+interface ZoneProps {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+  variant?: "control" | "data" | "broker" | "storage" | "neutral" | "external";
+  className?: string;
+}
+
+const zoneStyles: Record<string, string> = {
+  control: "border-control-plane/30 bg-control-plane-light/20",
+  data: "border-data-plane/30 bg-data-plane-light/20",
+  broker: "border-broker/30 bg-broker-light/20",
+  storage: "border-storage/30 bg-storage-light/20",
+  neutral: "border-border bg-secondary/30",
+  external: "border-dashed border-muted-foreground/30 bg-muted/20",
+};
+
+export function Zone({ title, subtitle, children, variant = "neutral", className }: ZoneProps) {
+  return (
+    <div className={cn("rounded-xl border-2 p-4", zoneStyles[variant], className)}>
+      <div className="mb-3">
+        <h4 className="font-semibold text-sm">{title}</h4>
+        {subtitle && <p className="text-[10px] text-muted-foreground">{subtitle}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// Connector for showing relationships
 interface ConnectorProps {
   direction: "down" | "right" | "left" | "up" | "bidirectional-h" | "bidirectional-v";
   label?: string;
@@ -79,14 +115,14 @@ interface ConnectorProps {
   variant?: "control" | "data" | "broker" | "neutral";
 }
 
-const connectorColors = {
+const connectorColors: Record<string, string> = {
   control: "bg-control-plane/60",
   data: "bg-data-plane/60",
   broker: "bg-broker/60",
   neutral: "bg-muted-foreground/40",
 };
 
-const arrowColors = {
+const arrowColors: Record<string, string> = {
   control: "border-control-plane/80",
   data: "border-data-plane/80",
   broker: "border-broker/80",
@@ -146,40 +182,38 @@ export function Connector({ direction, label, className, variant = "neutral" }: 
   return null;
 }
 
-// Zone/Region container for architecture diagrams
-interface ZoneProps {
+// Layer Container for sections
+interface LayerContainerProps {
   title: string;
-  variant?: "control" | "data" | "external" | "broker";
+  subtitle?: string;
   children: ReactNode;
+  color?: "blue" | "green" | "purple" | "orange" | "gray" | "pink" | "yellow" | "cyan";
   className?: string;
 }
 
-export function Zone({ title, variant = "control", children, className }: ZoneProps) {
-  const borderColors = {
-    control: "border-control-plane/40",
-    data: "border-data-plane/40",
-    external: "border-muted-foreground/30",
-    broker: "border-broker/40",
-  };
+const layerColors: Record<string, { bg: string; border: string; text: string }> = {
+  blue: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700" },
+  green: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-700" },
+  purple: { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700" },
+  orange: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700" },
+  gray: { bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-700" },
+  pink: { bg: "bg-pink-50", border: "border-pink-200", text: "text-pink-700" },
+  yellow: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700" },
+  cyan: { bg: "bg-cyan-50", border: "border-cyan-200", text: "text-cyan-700" },
+};
 
-  const bgColors = {
-    control: "bg-control-plane-light/20",
-    data: "bg-data-plane-light/20",
-    external: "bg-muted/10",
-    broker: "bg-broker-light/20",
-  };
-
-  const labelColors = {
-    control: "bg-control-plane text-primary-foreground",
-    data: "bg-data-plane text-accent-foreground",
-    external: "bg-muted-foreground text-background",
-    broker: "bg-broker text-primary-foreground",
-  };
-
+export function LayerContainer({ title, subtitle, children, color = "gray", className }: LayerContainerProps) {
+  const colors = layerColors[color];
+  
   return (
-    <div className={cn("relative rounded-xl border-2 border-dashed p-4 pt-8", borderColors[variant], bgColors[variant], className)}>
-      <div className={cn("absolute -top-3 left-4 px-3 py-1 rounded-full text-xs font-semibold", labelColors[variant])}>
-        {title}
+    <div className={cn("rounded-xl border-2 p-4", colors.bg, colors.border, className)}>
+      <div className="mb-3 flex items-center gap-2">
+        <h4 className={cn("font-bold text-sm", colors.text)}>{title}</h4>
+        {subtitle && (
+          <span className="text-[10px] text-muted-foreground bg-white/60 px-2 py-0.5 rounded-full">
+            {subtitle}
+          </span>
+        )}
       </div>
       {children}
     </div>

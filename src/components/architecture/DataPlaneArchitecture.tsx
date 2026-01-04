@@ -16,13 +16,14 @@ import {
   MessageSquare,
   ArrowDown,
   Settings,
-  Code2,
+  User,
   Workflow,
   Bell,
-  User,
-  LayoutDashboard,
   Blocks,
-  Laptop
+  Laptop,
+  Clock,
+  Search,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -80,7 +81,7 @@ export function DataPlaneArchitecture() {
             <div className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1">ACK Managed Cluster Pro</div>
             <div className="text-xs text-muted-foreground mb-3">Managed K8s Control Plane | Auto-scaling Nodes | Multi-Tenant Isolation</div>
             
-            {/* Tenant Namespaces */}
+            {/* Tenant Namespaces with Microservices */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               <NamespaceBox name="tenant-a" color="blue" />
               <NamespaceBox name="tenant-b" color="rose" />
@@ -93,7 +94,7 @@ export function DataPlaneArchitecture() {
                 <SharedComponent name="Ingress Controller" />
                 <SharedComponent name="CoreDNS" />
                 <SharedComponent name="Metrics Server" />
-                <SharedComponent name="ARMS Agent" />
+                <SharedComponent name="Logtail DaemonSet" />
               </div>
               <div className="flex gap-3 mt-2 text-xs">
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Tenant A</span>
@@ -103,22 +104,37 @@ export function DataPlaneArchitecture() {
             </div>
           </div>
 
-          <FlowArrow label="Database Connection / Storage Access" small />
+          <FlowArrow small />
 
-          {/* Persistence Layer */}
-          <div className="border border-orange-300 dark:border-orange-700 rounded-xl p-4 bg-orange-50/50 dark:bg-orange-900/20">
-            <div className="text-sm font-semibold text-orange-600 dark:text-orange-400 mb-1">Persistence Layer (Silo Mode)</div>
-            <div className="text-xs text-muted-foreground mb-3">Independent Resources per Tenant | Complete Data Isolation</div>
-            
-            <div className="space-y-3">
-              <TenantResources name="Tenant A" color="blue" dbName="tenant_a_db" />
-              <TenantResources name="Tenant B" color="rose" dbName="tenant_b_db" />
+          {/* Data Layer: Message Queue + Persistence (Side by Side) */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-3">
+            {/* Message Queue Layer */}
+            <div className="border border-red-300 dark:border-red-700 rounded-xl p-3 bg-red-50/50 dark:bg-red-900/20">
+              <div className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Message Queue</div>
+              <div className="text-xs text-muted-foreground mb-2">Async | Event-Driven</div>
+              <div className="flex justify-center mb-2">
+                <div className="bg-red-500 text-white rounded-lg px-3 py-1.5 text-center">
+                  <div className="flex items-center justify-center gap-1.5 font-semibold text-xs">
+                    <Zap size={12} />
+                    Redis / RabbitMQ
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1 text-[8px] text-center">
+                <div className="bg-white dark:bg-slate-800 rounded px-1 py-0.5 border">notification.send</div>
+                <div className="bg-white dark:bg-slate-800 rounded px-1 py-0.5 border">mail.send</div>
+                <div className="bg-white dark:bg-slate-800 rounded px-1 py-0.5 border">fts.index.create</div>
+                <div className="bg-white dark:bg-slate-800 rounded px-1 py-0.5 border">export.csv</div>
+              </div>
             </div>
 
-            <div className="mt-3 pt-2 border-t border-orange-200 dark:border-orange-800 text-center">
-              <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                <Shield size={12} />
-                Complete Data Isolation | No Cross-Tenant Access | Independent Backup & Recovery
+            {/* Persistence Layer */}
+            <div className="border border-orange-300 dark:border-orange-700 rounded-xl p-3 bg-orange-50/50 dark:bg-orange-900/20">
+              <div className="text-sm font-semibold text-orange-600 dark:text-orange-400 mb-1">Persistence Layer (Silo Mode)</div>
+              <div className="text-xs text-muted-foreground mb-2">Independent Resources per Tenant | Complete Data Isolation</div>
+              <div className="space-y-2">
+                <TenantResources name="Tenant A" color="blue" dbName="tenant_a_db" />
+                <TenantResources name="Tenant B" color="rose" dbName="tenant_b_db" />
               </div>
             </div>
           </div>
@@ -151,8 +167,70 @@ export function DataPlaneArchitecture() {
         </div>
       </div>
 
+      {/* Microservices Overview Table */}
+      <div className="bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-xl p-6 border mt-8">
+        <h4 className="font-semibold text-base mb-4 flex items-center gap-2">
+          <Server size={18} className="text-blue-600" />
+          Microservices Overview (NestJS Monorepo)
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-2 font-semibold">Service</th>
+                <th className="text-left py-2 px-2 font-semibold">Type</th>
+                <th className="text-left py-2 px-2 font-semibold">Responsibilities</th>
+                <th className="text-left py-2 px-2 font-semibold">Communication</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-dashed">
+                <td className="py-2 px-2">
+                  <span className="inline-flex items-center gap-1 font-medium text-blue-600">
+                    <Server size={12} /> Main
+                  </span>
+                </td>
+                <td className="py-2 px-2">Main App</td>
+                <td className="py-2 px-2">Core business logic (Forms, Data, Users, Workflow)</td>
+                <td className="py-2 px-2">HTTP + Message Emit</td>
+              </tr>
+              <tr className="border-b border-dashed">
+                <td className="py-2 px-2">
+                  <span className="inline-flex items-center gap-1 font-medium text-green-600">
+                    <Mail size={12} /> Worker
+                  </span>
+                </td>
+                <td className="py-2 px-2">Microservice</td>
+                <td className="py-2 px-2">Async notifications, Email, CSV export</td>
+                <td className="py-2 px-2">EventPattern</td>
+              </tr>
+              <tr className="border-b border-dashed">
+                <td className="py-2 px-2">
+                  <span className="inline-flex items-center gap-1 font-medium text-amber-600">
+                    <Clock size={12} /> Routine
+                  </span>
+                </td>
+                <td className="py-2 px-2">Microservice</td>
+                <td className="py-2 px-2">Scheduled tasks (Log cleanup, Data sync)</td>
+                <td className="py-2 px-2">@Cron</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-2">
+                  <span className="inline-flex items-center gap-1 font-medium text-purple-600">
+                    <Search size={12} /> FTS Service
+                  </span>
+                </td>
+                <td className="py-2 px-2">Microservice</td>
+                <td className="py-2 px-2">Attachment parsing + ES indexing</td>
+                <td className="py-2 px-2">MessagePattern / EventPattern</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Tenant Application Capabilities */}
-      <div className="bg-gradient-to-br from-data-plane/5 to-control-plane/5 rounded-xl p-6 border mt-8">
+      <div className="bg-gradient-to-br from-data-plane/5 to-control-plane/5 rounded-xl p-6 border mt-4">
         <h4 className="font-semibold text-base mb-5 flex items-center gap-2">
           <Settings size={18} className="text-data-plane" />
           Tenant Application Capabilities
@@ -341,12 +419,27 @@ function NamespaceBox({ name, color }: { name: string; color: "blue" | "rose" })
         <Container size={12} className="inline mr-1" />
         Namespace: {name}
       </div>
-      <div className="flex gap-2 mb-2">
-        <div className="flex-1 bg-emerald-500 rounded px-2 py-1.5 text-[10px] text-center font-medium text-white">supabase-pod</div>
-        <div className="flex-1 bg-blue-500 rounded px-2 py-1.5 text-[10px] text-center font-medium text-white">backendService-pod</div>
+      {/* Microservices Pods */}
+      <div className="grid grid-cols-2 gap-1.5 mb-2">
+        <div className="bg-blue-500 rounded px-2 py-1.5 text-[10px] text-center font-medium text-white">
+          <Server size={10} className="inline mr-1" />
+          Main
+        </div>
+        <div className="bg-green-500 rounded px-2 py-1.5 text-[10px] text-center font-medium text-white">
+          <Mail size={10} className="inline mr-1" />
+          Worker
+        </div>
+        <div className="bg-amber-500 rounded px-2 py-1.5 text-[10px] text-center font-medium text-white">
+          <Clock size={10} className="inline mr-1" />
+          Routine
+        </div>
+        <div className="bg-purple-500 rounded px-2 py-1.5 text-[10px] text-center font-medium text-white">
+          <Search size={10} className="inline mr-1" />
+          FTS
+        </div>
       </div>
       <div className="text-[9px] text-muted-foreground bg-white/50 dark:bg-slate-800/50 rounded px-2 py-1">
-        <span className="font-medium">backendService-pod:</span> Business Logic (AuthService, StorageService, UserService, etc.)
+        <span className="font-medium">Architecture:</span> Modular Monolith + Technical Microservices (NestJS)
       </div>
     </div>
   );
@@ -370,21 +463,23 @@ function TenantResources({ name, color, dbName }: { name: string; color: "blue" 
         <Container size={12} className="inline mr-1" />
         {name} - Dedicated Resources
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <ResourceItem icon={<Database size={14} />} title={`RDS: ${dbName}`} />
-        <ResourceItem icon={<HardDrive size={14} />} title={`OSS: tenant-${tenantLetter}-bucket`} />
-        <ResourceItem icon={<Server size={14} />} title={`Redis: tenant-${tenantLetter}-*`} />
-        <ResourceItem icon={<Cloud size={14} />} title={`SLS: tenant-${tenantLetter}-logs`} />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <ResourceItem icon={<Database size={14} />} title={`PostgreSQL`} subtitle={dbName} />
+        <ResourceItem icon={<HardDrive size={14} />} title={`OSS`} subtitle={`tenant-${tenantLetter}-bucket`} />
+        <ResourceItem icon={<Zap size={14} />} title={`Redis`} subtitle={`MQ + Cache`} />
+        <ResourceItem icon={<Search size={14} />} title={`Elasticsearch`} subtitle={`FTS Index`} />
+        <ResourceItem icon={<Cloud size={14} />} title={`SLS`} subtitle={`Logs`} />
       </div>
     </div>
   );
 }
 
-function ResourceItem({ icon, title }: { icon: React.ReactNode; title: string }) {
+function ResourceItem({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="text-muted-foreground mb-1">{icon}</div>
-      <div className="text-[10px] text-muted-foreground">{title}</div>
+      <div className="text-[10px] font-medium text-foreground">{title}</div>
+      <div className="text-[9px] text-muted-foreground">{subtitle}</div>
     </div>
   );
 }

@@ -193,8 +193,8 @@ export function ControlPlaneArchitecture() {
                 </div>
                 <span className="text-[8px] text-muted-foreground capitalize">{tenant.status}</span>
               </div>
-              <div className="grid grid-cols-3 gap-1">
-                {["Kong", "Auth", "REST", "RT", "Store", "PG"].map((svc) => (
+              <div className="grid grid-cols-2 gap-1">
+                {["Main", "Worker", "Routine", "FTS"].map((svc) => (
                   <div key={svc} className="text-[8px] bg-data-plane-light px-1 py-0.5 rounded text-center font-medium">
                     {svc}
                   </div>

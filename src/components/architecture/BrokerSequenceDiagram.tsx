@@ -21,7 +21,7 @@ export function BrokerSequenceDiagram() {
     { from: 3, to: 2, label: "9. Return user info", type: "dashed" },
     { from: 2, to: 2, label: "10. Generate Handoff Token", type: "self" },
     { from: 2, to: 1, label: "11. Redirect + handoff_token", type: "solid" },
-    { from: 1, to: 1, label: "12. Verify & Issue Supabase JWT", type: "self" },
+    { from: 1, to: 1, label: "12. Verify & Issue Session JWT", type: "self" },
     { from: 1, to: 0, label: "13. Session Established", type: "dashed" },
   ];
 
@@ -169,11 +169,11 @@ export function TokenCards() {
     },
     {
       step: 3,
-      name: "Supabase JWT",
+      name: "Session JWT",
       algorithm: "HS256",
       ttl: "1 hour",
       fields: ["sub", "role", "email", "user_metadata"],
-      purpose: "Session token for Supabase API",
+      purpose: "Session token for Platform API",
       variant: "data" as const,
     },
   ];
