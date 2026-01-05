@@ -76,7 +76,7 @@ const Index = () => {
               <Layers size={20} className="text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-lg">NeZha</h1>
+              <h1 className="font-bold text-lg">Nata</h1>
               <p className="text-xs text-muted-foreground">Multi-Tenant Architecture</p>
             </div>
           </div>
