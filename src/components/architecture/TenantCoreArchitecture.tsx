@@ -16,12 +16,13 @@ import {
   Bell,
   Download,
   RefreshCw,
-  Trash2,
   Zap,
   CheckCircle,
   ArrowRight
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SystemFlowDiagram } from "./SystemFlowDiagram";
+import { MessageQueueDiagram } from "./MessageQueueDiagram";
 
 type PodType = "main" | "worker" | "routine" | "fts";
 
@@ -54,9 +55,13 @@ export function TenantCoreArchitecture() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="text-center">
         <h2 className="text-2xl font-bold text-foreground">Single Tenant Core Architecture</h2>
-        <p className="text-muted-foreground">Core system design for a single tenant within VPC Container</p>
+      </div>
+
+      {/* System Flow Diagram (Mermaid) - Moved to top */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <SystemFlowDiagram />
       </div>
 
       {/* Architecture Overview - Visual Diagram */}
@@ -180,84 +185,62 @@ export function TenantCoreArchitecture() {
         </Tabs>
       </div>
 
-      {/* Message Queue Detail */}
+      {/* Message Queue Design - Optimized */}
       <div className="bg-card border border-border rounded-xl p-6 space-y-6">
         <SectionHeader 
           icon={<MessageSquare className="w-5 h-5" />} 
           title="Message Queue Design" 
-          subtitle="Based on Redis Streams for async inter-service communication"
         />
         
-        <div className="bg-muted/30 rounded-lg p-4 text-sm space-y-2">
-          <p><strong>Why Message Queue?</strong></p>
-          <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
-            <li>Decoupling: main service responds immediately without waiting for time-consuming tasks</li>
-            <li>Peak shaving: Tasks queue up during high traffic, preventing system overload</li>
-            <li>Reliability: Messages are persisted, no task loss after service restart</li>
-            <li>Observability: Monitor queue length and processing speed to detect issues early</li>
-          </ul>
+        {/* Benefits as compact badges */}
+        <div className="flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+            <Zap className="w-3 h-3" /> Decoupling
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-600 rounded-full text-xs font-medium">
+            <ArrowRight className="w-3 h-3" /> Peak Shaving
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-600 rounded-full text-xs font-medium">
+            <CheckCircle className="w-3 h-3" /> Reliability
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 text-purple-600 rounded-full text-xs font-medium">
+            <Search className="w-3 h-3" /> Observability
+          </span>
         </div>
 
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm">Queue List</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <QueueDetailCard
-              name="mail.send"
-              icon={<Mail className="w-4 h-4" />}
-              producer="main"
-              consumer="worker"
-              description="Send email notifications (verification, password reset, approval notices, etc.)"
-              example="User submits form → Triggers approval → Email sent to approver"
-            />
-            <QueueDetailCard
-              name="notification.send"
-              icon={<Bell className="w-4 h-4" />}
-              producer="main"
-              consumer="worker"
-              description="Send in-app notifications and push messages"
-              example="New pending task → Push notification to App / Mini Program"
-            />
-            <QueueDetailCard
-              name="export.csv"
-              icon={<Download className="w-4 h-4" />}
-              producer="main"
-              consumer="worker"
-              description="Export data to CSV/Excel files"
-              example="User clicks export → Background generates file → Notify user to download"
-            />
-            <QueueDetailCard
-              name="workflow.trigger"
-              icon={<Workflow className="w-4 h-4" />}
-              producer="main"
-              consumer="worker"
-              description="Trigger workflow engine to execute process nodes"
-              example="Data changes → Trigger automation → Execute approval/notification/update"
-            />
-            <QueueDetailCard
-              name="fts.index.create"
-              icon={<FileText className="w-4 h-4" />}
-              producer="main"
-              consumer="fts"
-              description="Create full-text search index (extract attachment content)"
-              example="Upload Word/PDF → Parse content → Build ES index"
-            />
-            <QueueDetailCard
-              name="fts.index.delete"
-              icon={<Trash2 className="w-4 h-4" />}
-              producer="main"
-              consumer="fts"
-              description="Clean up search index when files are deleted"
-              example="Delete attachment → Remove index record from ES"
-            />
-            <QueueDetailCard
-              name="data.sync"
-              icon={<RefreshCw className="w-4 h-4" />}
-              producer="main / routine"
-              consumer="worker"
-              description="Data synchronization tasks (third-party system integration)"
-              example="Scheduled sync from ERP → Update local records"
-            />
-          </div>
+        {/* Queue Flow Diagram */}
+        <MessageQueueDiagram />
+
+        {/* Queue Categories - Card Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <QueueCategoryCard
+            title="Notification"
+            icon={<Bell className="w-4 h-4" />}
+            queues={["mail.send", "notification.send"]}
+            flow="main → worker"
+            color="blue"
+          />
+          <QueueCategoryCard
+            title="Data Processing"
+            icon={<Download className="w-4 h-4" />}
+            queues={["export.csv", "data.sync"]}
+            flow="main/routine → worker"
+            color="green"
+          />
+          <QueueCategoryCard
+            title="Search Index"
+            icon={<Search className="w-4 h-4" />}
+            queues={["fts.index.create", "fts.index.delete"]}
+            flow="main → fts"
+            color="purple"
+          />
+          <QueueCategoryCard
+            title="Workflow"
+            icon={<Workflow className="w-4 h-4" />}
+            queues={["workflow.trigger"]}
+            flow="main → worker"
+            color="amber"
+          />
         </div>
       </div>
 
@@ -659,7 +642,7 @@ function FTSPodDetail() {
 
 // ==================== Helper Components ====================
 
-function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
+function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
   return (
     <div className="flex items-center gap-3">
       <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -667,7 +650,7 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
       </div>
       <div>
         <h3 className="font-semibold text-foreground">{title}</h3>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
+        {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
   );
@@ -820,31 +803,34 @@ function QueueBadge({ name, variant = "produce" }: { name: string; variant?: "pr
   );
 }
 
-function QueueDetailCard({ name, icon, producer, consumer, description, example }: {
-  name: string;
+function QueueCategoryCard({ title, icon, queues, flow, color }: {
+  title: string;
   icon: React.ReactNode;
-  producer: string;
-  consumer: string;
-  description: string;
-  example: string;
+  queues: string[];
+  flow: string;
+  color: "blue" | "green" | "purple" | "amber";
 }) {
+  const colorMap = {
+    blue: "bg-blue-500/10 text-blue-600 border-blue-200",
+    green: "bg-green-500/10 text-green-600 border-green-200",
+    purple: "bg-purple-500/10 text-purple-600 border-purple-200",
+    amber: "bg-amber-500/10 text-amber-600 border-amber-200",
+  };
+  
   return (
-    <div className="border border-border rounded-lg p-4 space-y-3">
+    <div className={`rounded-lg border p-4 space-y-3 ${colorMap[color]}`}>
       <div className="flex items-center gap-2">
-        <div className="p-1.5 bg-primary/10 rounded text-primary">
-          {icon}
-        </div>
-        <span className="font-mono font-semibold text-sm">{name}</span>
+        {icon}
+        <span className="font-medium text-sm">{title}</span>
       </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
-      <div className="flex items-center gap-2 text-xs">
-        <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded">{producer}</span>
-        <ArrowRight className="w-3 h-3 text-muted-foreground" />
-        <span className="bg-green-500/10 text-green-500 px-2 py-0.5 rounded">{consumer}</span>
+      <div className="space-y-1.5">
+        {queues.map((q) => (
+          <div key={q} className="font-mono text-xs bg-background/60 px-2 py-1 rounded">
+            {q}
+          </div>
+        ))}
       </div>
-      <div className="text-xs text-muted-foreground bg-muted/30 rounded px-2 py-1.5">
-        <span className="text-primary">Example: </span>{example}
-      </div>
+      <div className="text-xs opacity-75">{flow}</div>
     </div>
   );
 }
