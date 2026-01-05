@@ -23,8 +23,10 @@ import {
   Laptop,
   Clock,
   Search,
-  Zap
+  Zap,
+  Image
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function DataPlaneArchitecture() {
@@ -167,12 +169,13 @@ export function DataPlaneArchitecture() {
         </div>
       </div>
 
-      {/* Microservices Overview Table */}
+      {/* Microservices & Base Services Overview */}
       <div className="bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-xl p-6 border mt-8">
         <h4 className="font-semibold text-base mb-4 flex items-center gap-2">
           <Server size={18} className="text-blue-600" />
           Microservices Overview (NestJS Monorepo)
         </h4>
+        
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -214,7 +217,7 @@ export function DataPlaneArchitecture() {
                 <td className="py-2 px-2">Scheduled tasks (Log cleanup, Data sync)</td>
                 <td className="py-2 px-2">@Cron</td>
               </tr>
-              <tr>
+              <tr className="border-b border-dashed">
                 <td className="py-2 px-2">
                   <span className="inline-flex items-center gap-1 font-medium text-purple-600">
                     <Search size={12} /> FTS Service
@@ -223,6 +226,18 @@ export function DataPlaneArchitecture() {
                 <td className="py-2 px-2">Microservice</td>
                 <td className="py-2 px-2">Attachment parsing + ES indexing</td>
                 <td className="py-2 px-2">MessagePattern / EventPattern</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-2">
+                  <span className="inline-flex items-center gap-1 font-medium text-cyan-600">
+                    <Image size={12} /> Imgproxy
+                  </span>
+                </td>
+                <td className="py-2 px-2">
+                  <Badge variant="secondary" className="text-[9px]">Standalone Only</Badge>
+                </td>
+                <td className="py-2 px-2">On-the-fly image resize, crop, format conversion (WebP/AVIF)</td>
+                <td className="py-2 px-2">HTTP (reads from MinIO)</td>
               </tr>
             </tbody>
           </table>
@@ -465,7 +480,7 @@ function TenantResources({ name, color, dbName }: { name: string; color: "blue" 
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <ResourceItem icon={<Database size={14} />} title={`PostgreSQL`} subtitle={dbName} />
-        <ResourceItem icon={<HardDrive size={14} />} title={`OSS`} subtitle={`tenant-${tenantLetter}-bucket`} />
+        <ResourceItem icon={<HardDrive size={14} />} title={`MinIO / OSS`} subtitle={`tenant-${tenantLetter}-bucket`} />
         <ResourceItem icon={<Zap size={14} />} title={`Redis`} subtitle={`MQ + Cache`} />
         <ResourceItem icon={<Search size={14} />} title={`Elasticsearch`} subtitle={`FTS Index`} />
         <ResourceItem icon={<Cloud size={14} />} title={`SLS`} subtitle={`Logs`} />
@@ -495,3 +510,4 @@ function ThirdPartyBox({ icon, title, subtitle }: { icon: React.ReactNode; title
     </div>
   );
 }
+

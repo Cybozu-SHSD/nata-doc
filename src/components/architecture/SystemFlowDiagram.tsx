@@ -8,53 +8,55 @@ import {
 
 const diagramDefinition = `
 graph TB
-    subgraph CoreSystem["🏠 Core System"]
-        MAIN["🔷 <b>main</b><br/>(Core Business)"]
+    subgraph CoreSystem["🏠 Core Application"]
+        MAIN["🔷 <b>Main</b><br/>Business API & Data<br/><i>Full NestJS Stack</i>"]
     end
 
-    subgraph Satellite["🛰️ Satellite Microservices"]
-        WORKER["🟢 <b>worker</b><br/>(Async Tasks)"]
-        ROUTINE["🟠 <b>routine</b><br/>(Scheduled Jobs)"]
-        FTS["🟣 <b>fts</b><br/>(Full-Text Search)"]
+    subgraph Satellite["🛰️ Satellite Services"]
+        WORKER["🟢 <b>Worker</b><br/>Email / CSV Export<br/><i>Pure Consumer</i>"]
+        ROUTINE["🟠 <b>Routine</b><br/>Cleanup / Maintenance<br/><i>Pure Executor</i>"]
+        FTS["🟣 <b>FTS</b><br/>File Parse & ES Index<br/><i>Standalone Feature</i>"]
     end
 
-    subgraph Deploy["📦 Infrastructure (Deploy)"]
-        MINIO["💾 <b>Blob Service</b><br/>(MinIO)"]
-        IMGPROXY["🖼️ <b>Imgproxy</b><br/>(Image Processing)"]
+    subgraph Deploy["📦 Base Services (Standalone Only)"]
+        MINIO["💾 <b>MinIO</b><br/>S3-Compatible Storage<br/><i>StatefulSet</i>"]
+        IMGPROXY["🖼️ <b>Imgproxy</b><br/>Crop / Resize / Watermark<br/><i>Supplements MinIO</i>"]
     end
 
-    subgraph CloudSvc["☁️ Cloud Services"]
-        OSS["📁 <b>OSS</b><br/>(Blob + Images)"]
-        SLS["📋 <b>SLS</b><br/>(Logs)"]
+    subgraph CloudSvc["☁️ Cloud Services (Cloud Deploy)"]
+        OSS["📁 <b>OSS</b><br/>Files + Images"]
+        SLS["📋 <b>SLS</b><br/>Log Service"]
     end
 
     subgraph Infra["🔧 Infrastructure"]
-        REDIS["⚡ <b>Redis</b><br/>(Queue)"]
-        PG["🐘 <b>PostgreSQL</b>"]
-        ES["🔍 <b>Elasticsearch</b>"]
+        REDIS["⚡ <b>Redis</b><br/>Message Queue"]
+        PG["🐘 <b>PostgreSQL</b><br/>Data Persistence"]
+        ES["🔍 <b>Elasticsearch</b><br/>Full-Text Search"]
     end
 
-    %% Main app sends messages (Producer)
-    MAIN --> |"Emit Event"| REDIS
+    %% Main publishes events
+    MAIN --> |"Publish Event"| REDIS
 
-    %% Services consume messages (Consumer)
+    %% Satellite services consume messages
     REDIS --> |"Consume"| WORKER
     REDIS --> |"Consume"| ROUTINE
     REDIS --> |"Consume"| FTS
 
-    %% Data Access
+    %% Data access
     MAIN --> PG
     WORKER --> PG
+    ROUTINE --> PG
     FTS --> ES
+    FTS -.-> OSS
 
-    %% Image Processing Flow
-    IMGPROXY --> |"Fetch Original"| MINIO
+    %% Image processing flow
+    IMGPROXY --> |"Read Source"| MINIO
 
-    %% Cloud / External
-    MAIN -.-> |"Gen URL"| OSS
-    MAIN -.-> |"Gen URL"| IMGPROXY
-    MAIN -.-> |"Log"| SLS
-    WORKER -.-> |"Log"| SLS
+    %% Cloud service dependencies
+    MAIN -.-> |"Generate URL"| OSS
+    MAIN -.-> |"Generate URL"| IMGPROXY
+    MAIN -.-> |"Logs"| SLS
+    WORKER -.-> |"Logs"| SLS
 `;
 
 export function SystemFlowDiagram() {

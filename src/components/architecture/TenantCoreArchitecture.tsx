@@ -1,858 +1,844 @@
 import { useState } from "react";
 import { 
-  Database, 
   Server, 
-  HardDrive, 
-  MessageSquare, 
   Cpu, 
   Clock, 
   Search, 
-  FileText, 
-  Workflow, 
-  Users, 
-  Settings, 
+  Database, 
+  HardDrive,
   Layers,
+  GitBranch,
   Mail,
-  Bell,
-  Download,
+  FileText,
+  Trash2,
+  Image,
   RefreshCw,
   Zap,
-  CheckCircle,
-  ArrowRight
+  Shield,
+  Bell,
+  FileOutput,
+  Timer,
+  Activity,
+  Settings,
+  Sparkles,
+  Network,
+  Container,
+  Cloud,
+  Home,
+  ImageIcon,
+  Crop,
+  Maximize2,
+  FileType,
+  X
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SystemFlowDiagram } from "./SystemFlowDiagram";
 import { MessageQueueDiagram } from "./MessageQueueDiagram";
 
-type PodType = "main" | "worker" | "routine" | "fts";
+type PodType = "main" | "worker" | "routine" | "fts" | "imgproxy";
 
-// Storage used by each Pod
-const podStorageMap: Record<PodType, { name: string; type: string; icon: "pg" | "redis" | "oss" | "es" }[]> = {
-  main: [
-    { name: "PostgreSQL", type: "Business Data R/W", icon: "pg" },
-    { name: "Redis", type: "Cache + Distributed Lock", icon: "redis" },
-    { name: "OSS", type: "File Upload", icon: "oss" },
-  ],
-  worker: [
-    { name: "PostgreSQL", type: "Business Data R/W", icon: "pg" },
-    { name: "Redis", type: "Message Queue", icon: "redis" },
-    { name: "OSS", type: "Export File Storage", icon: "oss" },
-  ],
-  routine: [
-    { name: "PostgreSQL", type: "Data R/W", icon: "pg" },
-    { name: "Redis", type: "Distributed Lock", icon: "redis" },
-  ],
-  fts: [
-    { name: "Redis", type: "Message Queue", icon: "redis" },
-    { name: "OSS", type: "Download Attachments", icon: "oss" },
-    { name: "ElasticSearch", type: "Index R/W", icon: "es" },
-  ],
+// Storage dependency mapping - distinguish standalone/cloud
+const podStorageMap: Record<PodType, {
+  postgres?: string;
+  redis?: string;
+  objectStorage?: string;
+  elasticsearch?: string;
+  sls?: string;
+}> = {
+  main: {
+    postgres: "R/W Business Data",
+    redis: "Cache + Lock + Queue",
+    objectStorage: "File Upload, URL Gen",
+    elasticsearch: "Search Query (Read)",
+    sls: "Log Output"
+  },
+  worker: {
+    postgres: "R/W Task Data",
+    redis: "Queue Consumer",
+    objectStorage: "Export File Upload",
+    sls: "Log Output"
+  },
+  routine: {
+    postgres: "R/W Scheduled Tasks",
+    redis: "Distributed Lock",
+    sls: "Log Output"
+  },
+  fts: {
+    redis: "Queue Consumer",
+    objectStorage: "Download & Parse Files",
+    elasticsearch: "Index R/W",
+    sls: "Log Output"
+  },
+  imgproxy: {
+    objectStorage: "Read Source Image",
+  }
 };
 
 export function TenantCoreArchitecture() {
-  const [selectedPod, setSelectedPod] = useState<PodType>("main");
-
+  const [selectedPod, setSelectedPod] = useState<PodType | null>(null);
+  
+  const handlePodClick = (pod: PodType) => {
+    setSelectedPod(selectedPod === pod ? null : pod);
+  };
+  
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground">Single Tenant Core Architecture</h2>
-      </div>
-
-      {/* System Flow Diagram (Mermaid) - Moved to top */}
+      {/* System Flow Diagram */}
       <div className="bg-card border border-border rounded-xl p-6">
         <SystemFlowDiagram />
       </div>
-
-      {/* Architecture Overview - Visual Diagram */}
+      
+      {/* Pod Overview - 5 columns in one row */}
       <div className="bg-card border border-border rounded-xl p-6">
         <SectionHeader 
-          icon={<Layers className="w-5 h-5" />} 
-          title="System Overview" 
-          subtitle="Click on each Pod to view details"
+          icon={Layers} 
+          title="Compute Layer Pods" 
+          subtitle="5 Deployments, separated by responsibility (click to view storage dependencies)"
         />
         
-        <div className="mt-6 space-y-6">
-          {/* Client Layer */}
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg text-sm">
-              <Users className="w-4 h-4" />
-              <span>Client Requests (HTTP / WebSocket)</span>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <ArrowDown />
-          </div>
-
-          {/* Application Pods - Interactive */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <PodOverviewCard
-              id="main"
-              name="main"
-              subtitle="API Gateway"
-              isSelected={selectedPod === "main"}
-              onClick={() => setSelectedPod("main")}
-              color="blue"
-              replicas="2-4"
-            />
-            <PodOverviewCard
-              id="worker"
-              name="worker"
-              subtitle="Async Tasks"
-              isSelected={selectedPod === "worker"}
-              onClick={() => setSelectedPod("worker")}
-              color="green"
-              replicas="1-2"
-            />
-            <PodOverviewCard
-              id="routine"
-              name="routine"
-              subtitle="Scheduled Jobs"
-              isSelected={selectedPod === "routine"}
-              onClick={() => setSelectedPod("routine")}
-              color="orange"
-              replicas="1"
-            />
-            <PodOverviewCard
-              id="fts"
-              name="fts"
-              subtitle="Full-Text Search"
-              isSelected={selectedPod === "fts"}
-              onClick={() => setSelectedPod("fts")}
-              color="purple"
-              replicas="1"
-            />
-          </div>
-
-          <div className="flex justify-center">
-            <ArrowDown label="Read/Write Data" />
-          </div>
-
-          {/* Storage Layer - Dynamic based on selected Pod */}
-          <div className="space-y-2">
-            <div className="text-center text-xs text-muted-foreground">
-              Storage used by <span className="font-mono font-semibold text-foreground">{selectedPod}</span>
-            </div>
-            <div className="flex justify-center gap-3 flex-wrap">
-              {podStorageMap[selectedPod].map((storage) => (
-                <StorageSimple 
-                  key={storage.name}
-                  icon={getStorageIcon(storage.icon)} 
-                  name={storage.name} 
-                  type={storage.type} 
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pod Detail Tabs */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <Tabs value={selectedPod} onValueChange={(v) => setSelectedPod(v as PodType)}>
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="main" className="data-[state=active]:bg-blue-500/20">
-              <Cpu className="w-4 h-4 mr-2" />
-              main
-            </TabsTrigger>
-            <TabsTrigger value="worker" className="data-[state=active]:bg-green-500/20">
-              <Zap className="w-4 h-4 mr-2" />
-              worker
-            </TabsTrigger>
-            <TabsTrigger value="routine" className="data-[state=active]:bg-orange-500/20">
-              <Clock className="w-4 h-4 mr-2" />
-              routine
-            </TabsTrigger>
-            <TabsTrigger value="fts" className="data-[state=active]:bg-purple-500/20">
-              <Search className="w-4 h-4 mr-2" />
-              fts
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="main">
-            <MainPodDetail />
-          </TabsContent>
-          <TabsContent value="worker">
-            <WorkerPodDetail />
-          </TabsContent>
-          <TabsContent value="routine">
-            <RoutinePodDetail />
-          </TabsContent>
-          <TabsContent value="fts">
-            <FTSPodDetail />
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Message Queue Design - Optimized */}
-      <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-        <SectionHeader 
-          icon={<MessageSquare className="w-5 h-5" />} 
-          title="Message Queue Design" 
-        />
-        
-        {/* Benefits as compact badges */}
-        <div className="flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
-            <Zap className="w-3 h-3" /> Decoupling
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-600 rounded-full text-xs font-medium">
-            <ArrowRight className="w-3 h-3" /> Peak Shaving
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-600 rounded-full text-xs font-medium">
-            <CheckCircle className="w-3 h-3" /> Reliability
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 text-purple-600 rounded-full text-xs font-medium">
-            <Search className="w-3 h-3" /> Observability
-          </span>
-        </div>
-
-        {/* Queue Flow Diagram */}
-        <MessageQueueDiagram />
-
-        {/* Queue Categories - Card Style */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <QueueCategoryCard
-            title="Notification"
-            icon={<Bell className="w-4 h-4" />}
-            queues={["mail.send", "notification.send"]}
-            flow="main → worker"
+        <div className="grid grid-cols-5 gap-4 mt-6">
+          <PodOverviewCard
+            pod="main"
+            name="main"
+            label="Core App"
+            labelColor="bg-blue-500"
+            icon={Server}
             color="blue"
+            description="Business API & Data, Full NestJS Stack"
+            isSelected={selectedPod === "main"}
+            onClick={() => handlePodClick("main")}
           />
-          <QueueCategoryCard
-            title="Data Processing"
-            icon={<Download className="w-4 h-4" />}
-            queues={["export.csv", "data.sync"]}
-            flow="main/routine → worker"
+          <PodOverviewCard
+            pod="worker"
+            name="worker"
+            label="Satellite"
+            labelColor="bg-green-500"
+            icon={Cpu}
             color="green"
+            description="Pure Consumer: Email, CSV Export"
+            isSelected={selectedPod === "worker"}
+            onClick={() => handlePodClick("worker")}
           />
-          <QueueCategoryCard
-            title="Search Index"
-            icon={<Search className="w-4 h-4" />}
-            queues={["fts.index.create", "fts.index.delete"]}
-            flow="main → fts"
+          <PodOverviewCard
+            pod="routine"
+            name="routine"
+            label="Satellite"
+            labelColor="bg-orange-500"
+            icon={Clock}
+            color="orange"
+            description="Pure Executor: Cleanup, Maintenance"
+            isSelected={selectedPod === "routine"}
+            onClick={() => handlePodClick("routine")}
+          />
+          <PodOverviewCard
+            pod="fts"
+            name="fts"
+            label="Satellite"
+            labelColor="bg-purple-500"
+            icon={Search}
             color="purple"
+            description="Standalone: File Parse, ES Index"
+            isSelected={selectedPod === "fts"}
+            onClick={() => handlePodClick("fts")}
           />
-          <QueueCategoryCard
-            title="Workflow"
-            icon={<Workflow className="w-4 h-4" />}
-            queues={["workflow.trigger"]}
-            flow="main → worker"
-            color="amber"
+          <PodOverviewCard
+            pod="imgproxy"
+            name="imgproxy"
+            label="Base Svc"
+            labelColor="bg-pink-500"
+            icon={ImageIcon}
+            color="pink"
+            description="Image Processing: Crop, Resize, Watermark"
+            badge="Standalone"
+            badgeIcon={Home}
+            isSelected={selectedPod === "imgproxy"}
+            onClick={() => handlePodClick("imgproxy")}
+          />
+        </div>
+        
+        {/* Expanded Pod Detail */}
+        {selectedPod && (
+          <ExpandedPodDetail 
+            pod={selectedPod} 
+            onClose={() => setSelectedPod(null)} 
+          />
+        )}
+      </div>
+
+      {/* Storage Layer - by deployment mode */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <SectionHeader 
+          icon={Database} 
+          title="Storage Layer" 
+          subtitle={selectedPod ? `Storage used by ${selectedPod} Pod is highlighted` : "Persistence services, categorized by Common / Standalone / Cloud"}
+        />
+        
+        {/* Common Storage */}
+        <div className="mt-6 mb-6">
+          <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+            <Network className="h-4 w-4" />
+            Common Storage (All Deployment Modes)
+          </h4>
+          <div className="grid grid-cols-3 gap-4">
+            <StorageCard
+              name="PostgreSQL"
+              type="Managed / External"
+              icon={Database}
+              color="blue"
+              description="Business Data R/W"
+              consumers={["main", "worker", "routine"]}
+              selectedPod={selectedPod}
+            />
+            <StorageCard
+              name="Redis"
+              type="Managed / External"
+              icon={Zap}
+              color="red"
+              description="Cache + MQ + Lock"
+              consumers={["main", "worker", "routine", "fts"]}
+              selectedPod={selectedPod}
+            />
+            <StorageCard
+              name="ElasticSearch"
+              type="Managed / External"
+              icon={Search}
+              color="yellow"
+              description="Full-Text Search Index"
+              consumers={["main", "fts"]}
+              selectedPod={selectedPod}
+            />
+          </div>
+        </div>
+
+        {/* Standalone vs Cloud Storage */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Standalone Deployment Storage */}
+          <div className="border border-dashed border-orange-500/30 rounded-lg p-4 bg-orange-500/5">
+            <h4 className="text-sm font-medium text-orange-400 mb-3 flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              Standalone Deployment
+            </h4>
+            <div className="space-y-3">
+              <StorageCard
+                name="MinIO"
+                type="StatefulSet + PVC"
+                icon={HardDrive}
+                color="orange"
+                description="S3-Compatible Object Storage"
+                consumers={["main", "worker", "fts", "imgproxy"]}
+                pvc="minio-data"
+                selectedPod={selectedPod}
+              />
+              <div className="text-xs text-muted-foreground bg-background/50 rounded p-2">
+                <div className="flex items-center gap-1 text-orange-400 mb-1">
+                  <ImageIcon className="h-3 w-3" />
+                  <span className="font-medium">Imgproxy Note</span>
+                </div>
+                MinIO only provides storage without image processing. Imgproxy reads source images from MinIO and provides crop/resize/watermark processing.
+              </div>
+            </div>
+          </div>
+
+          {/* Cloud Deployment Storage */}
+          <div className="border border-dashed border-cyan-500/30 rounded-lg p-4 bg-cyan-500/5">
+            <h4 className="text-sm font-medium text-cyan-400 mb-3 flex items-center gap-2">
+              <Cloud className="h-4 w-4" />
+              Cloud Deployment
+            </h4>
+            <div className="space-y-3">
+              <StorageCard
+                name="OSS"
+                type="Alibaba Cloud Object Storage"
+                icon={Cloud}
+                color="cyan"
+                description="File Storage + Image Processing"
+                consumers={["main", "worker", "fts"]}
+                selectedPod={selectedPod}
+              />
+              <StorageCard
+                name="SLS"
+                type="Alibaba Cloud Log Service"
+                icon={FileText}
+                color="cyan"
+                description="Centralized Log Collection"
+                consumers={["main", "worker", "routine", "fts"]}
+                selectedPod={selectedPod}
+              />
+              <div className="text-xs text-muted-foreground bg-background/50 rounded p-2">
+                <div className="flex items-center gap-1 text-cyan-400 mb-1">
+                  <ImageIcon className="h-3 w-3" />
+                  <span className="font-medium">OSS Image Processing</span>
+                </div>
+                OSS has built-in image processing, no Imgproxy needed. Imgproxy Pod is not deployed in cloud mode.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Message Queue Design */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <SectionHeader 
+          icon={GitBranch} 
+          title="Message Queue Design" 
+          subtitle="Lightweight message queue based on Redis"
+        />
+        
+        <div className="mt-6">
+          <MessageQueueDiagram />
+        </div>
+        
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <BenefitCard
+            icon={Shield}
+            title="Reliability"
+            description="Message persistence with retry mechanism"
+          />
+          <BenefitCard
+            icon={Zap}
+            title="Performance"
+            description="Native Redis, low latency high throughput"
+          />
+          <BenefitCard
+            icon={Settings}
+            title="Simplicity"
+            description="No additional MQ middleware required"
           />
         </div>
       </div>
 
       {/* Kubernetes Resources */}
-      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-xl p-6">
         <SectionHeader 
-          icon={<Settings className="w-5 h-5" />} 
+          icon={Container} 
           title="Kubernetes Resources" 
-          subtitle="Tenant namespace: tenant-{id}"
+          subtitle="Categorized by resource type"
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4 mt-6">
           <K8sResourceGroup
             title="Workloads"
-            resources={[
-              { type: "Deployment", name: "main", detail: "replicas: 2" },
-              { type: "Deployment", name: "worker", detail: "replicas: 1" },
-              { type: "Deployment", name: "routine", detail: "replicas: 1" },
-              { type: "Deployment", name: "fts", detail: "replicas: 1" },
+            items={[
+              { name: "main", type: "Deployment" },
+              { name: "worker", type: "Deployment" },
+              { name: "routine", type: "Deployment" },
+              { name: "fts", type: "Deployment" },
+              { name: "imgproxy", type: "Deployment", badge: "Standalone" },
+              { name: "minio", type: "StatefulSet", badge: "Standalone" },
             ]}
           />
           <K8sResourceGroup
-            title="Networking"
-            resources={[
-              { type: "Service", name: "main-svc", detail: "ClusterIP" },
-              { type: "Ingress", name: "tenant-ingress", detail: "subdomain" },
-            ]}
-          />
-          <K8sResourceGroup
-            title="Configuration"
-            resources={[
-              { type: "ConfigMap", name: "app-config", detail: "Environment" },
-              { type: "Secret", name: "db-credentials", detail: "DB Password" },
-              { type: "Secret", name: "oss-credentials", detail: "OSS Credentials" },
-            ]}
-          />
-          <K8sResourceGroup
-            title="Autoscaling"
-            resources={[
-              { type: "HPA", name: "main-hpa", detail: "min:2 max:4" },
-              { type: "HPA", name: "worker-hpa", detail: "min:1 max:3" },
+            title="Services"
+            items={[
+              { name: "main-svc", type: "ClusterIP" },
+              { name: "minio-svc", type: "ClusterIP", badge: "Standalone" },
+              { name: "imgproxy-svc", type: "ClusterIP", badge: "Standalone" },
             ]}
           />
           <K8sResourceGroup
             title="Storage"
-            resources={[
-              { type: "PVC", name: "logs-pvc", detail: "10Gi" },
-              { type: "PVC", name: "temp-pvc", detail: "5Gi" },
+            items={[
+              { name: "minio-data", type: "PVC", badge: "Standalone" },
+              { name: "logs-pvc", type: "PVC" },
+              { name: "temp-pvc", type: "PVC" },
             ]}
           />
           <K8sResourceGroup
-            title="Observability"
-            resources={[
-              { type: "ServiceMonitor", name: "metrics", detail: "Prometheus" },
-              { type: "PodMonitor", name: "logs", detail: "Loki" },
+            title="Config"
+            items={[
+              { name: "app-config", type: "ConfigMap" },
+              { name: "app-secrets", type: "Secret" },
             ]}
           />
         </div>
       </div>
+
     </div>
   );
 }
 
-// ==================== Pod Detail Components ====================
-
-function MainPodDetail() {
-  return (
-    <div className="space-y-6">
-      <PodHeader
-        name="main"
-        subtitle="API Gateway & Business Logic"
-        color="blue"
-        replicas="2-4"
-        resources="1 CPU / 2 GB Memory"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Responsibilities */}
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-blue-500" />
-            Core Responsibilities
-          </h4>
-          <div className="space-y-3">
-            <ResponsibilityItem
-              title="HTTP API Service"
-              description="Handle all client REST API requests including CRUD operations, authentication, etc."
-            />
-            <ResponsibilityItem
-              title="WebSocket Connection"
-              description="Real-time message push, support online user status and instant notifications"
-            />
-            <ResponsibilityItem
-              title="Business Logic Processing"
-              description="Form data validation, permission checks, business rule execution"
-            />
-            <ResponsibilityItem
-              title="Message Producer"
-              description="Send time-consuming tasks to message queue for async processing by worker/fts"
-            />
-          </div>
-        </div>
-
-        {/* Technical Details */}
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Settings className="w-4 h-4 text-blue-500" />
-            Technical Implementation
-          </h4>
-          <div className="bg-muted/30 rounded-lg p-4 space-y-3 text-sm">
-            <TechItem label="Framework" value="NestJS + Express" />
-            <TechItem label="Auth" value="JWT + Passport" />
-            <TechItem label="Authorization" value="OSO (Polar) RBAC/ABAC" />
-            <TechItem label="ORM" value="Prisma / TypeORM" />
-            <TechItem label="Validation" value="class-validator + class-transformer" />
-            <TechItem label="Docs" value="Swagger / OpenAPI" />
-          </div>
-
-          <h4 className="font-semibold text-sm flex items-center gap-2 mt-4">
-            <Database className="w-4 h-4 text-blue-500" />
-            Storage Dependencies
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <StorageBadge name="PostgreSQL" purpose="R/W" />
-            <StorageBadge name="Redis" purpose="Cache+Lock" />
-            <StorageBadge name="OSS" purpose="File Upload" />
-          </div>
-        </div>
-      </div>
-
-      {/* Queue Messages */}
-      <div className="space-y-3">
-        <h4 className="font-semibold text-sm">Queue Messages Produced</h4>
-        <div className="flex flex-wrap gap-2">
-          <QueueBadge name="mail.send" />
-          <QueueBadge name="notification.send" />
-          <QueueBadge name="export.csv" />
-          <QueueBadge name="workflow.trigger" />
-          <QueueBadge name="fts.index.create" />
-          <QueueBadge name="fts.index.delete" />
-          <QueueBadge name="data.sync" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function WorkerPodDetail() {
-  return (
-    <div className="space-y-6">
-      <PodHeader
-        name="worker"
-        subtitle="Async Task Consumer"
-        color="green"
-        replicas="1-2"
-        resources="0.5 CPU / 1 GB Memory"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            Core Responsibilities
-          </h4>
-          <div className="space-y-3">
-            <ResponsibilityItem
-              title="Email Sending"
-              description="Call email service API to send various notification emails (verification, approval, reports)"
-            />
-            <ResponsibilityItem
-              title="Push Notifications"
-              description="Send in-app notifications, App push, Mini Program subscription messages"
-            />
-            <ResponsibilityItem
-              title="Data Export"
-              description="Generate CSV/Excel export files, upload to OSS for user download"
-            />
-            <ResponsibilityItem
-              title="Workflow Execution"
-              description="Execute approval process nodes, automation triggers, scheduled tasks"
-            />
-            <ResponsibilityItem
-              title="Data Synchronization"
-              description="Sync data with third-party systems (ERP, CRM, etc.)"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Settings className="w-4 h-4 text-green-500" />
-            Technical Implementation
-          </h4>
-          <div className="bg-muted/30 rounded-lg p-4 space-y-3 text-sm">
-            <TechItem label="Framework" value="NestJS Microservice" />
-            <TechItem label="Consumer" value="@EventPattern / @MessagePattern" />
-            <TechItem label="Email" value="Nodemailer / Aliyun DirectMail" />
-            <TechItem label="Push" value="Firebase / JPush" />
-            <TechItem label="Export" value="ExcelJS / csv-writer" />
-            <TechItem label="Retry" value="Bull Queue + Exponential Backoff" />
-          </div>
-
-          <h4 className="font-semibold text-sm flex items-center gap-2 mt-4">
-            <Database className="w-4 h-4 text-green-500" />
-            Storage Dependencies
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <StorageBadge name="PostgreSQL" purpose="R/W" />
-            <StorageBadge name="Redis" purpose="Queue" />
-            <StorageBadge name="OSS" purpose="Export Files" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <h4 className="font-semibold text-sm">Queue Messages Consumed</h4>
-        <div className="flex flex-wrap gap-2">
-          <QueueBadge name="mail.send" variant="consume" />
-          <QueueBadge name="notification.send" variant="consume" />
-          <QueueBadge name="export.csv" variant="consume" />
-          <QueueBadge name="workflow.trigger" variant="consume" />
-          <QueueBadge name="data.sync" variant="consume" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RoutinePodDetail() {
-  return (
-    <div className="space-y-6">
-      <PodHeader
-        name="routine"
-        subtitle="Scheduled Jobs"
-        color="orange"
-        replicas="1"
-        resources="0.25 CPU / 512 MB Memory"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-orange-500" />
-            Core Responsibilities
-          </h4>
-          <div className="space-y-3">
-            <ResponsibilityItem
-              title="Scheduled Data Sync"
-              description="Sync third-party system data hourly/daily to maintain data consistency"
-            />
-            <ResponsibilityItem
-              title="Log Cleanup"
-              description="Periodically clean expired operation logs and temp files to free storage"
-            />
-            <ResponsibilityItem
-              title="Statistics Aggregation"
-              description="Generate daily/weekly business statistics reports, update dashboard data"
-            />
-            <ResponsibilityItem
-              title="Health Checks"
-              description="Periodically check dependent service status, alert on anomalies"
-            />
-            <ResponsibilityItem
-              title="Expiration Handling"
-              description="Process expired pending items, timed-out approval workflows"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Settings className="w-4 h-4 text-orange-500" />
-            Technical Implementation
-          </h4>
-          <div className="bg-muted/30 rounded-lg p-4 space-y-3 text-sm">
-            <TechItem label="Framework" value="NestJS + @nestjs/schedule" />
-            <TechItem label="Scheduler" value="@Cron decorator" />
-            <TechItem label="Distributed Lock" value="Redis Redlock (prevent duplicate execution)" />
-            <TechItem label="Logging" value="Winston + Aliyun SLS" />
-          </div>
-
-          <h4 className="font-semibold text-sm flex items-center gap-2 mt-4">
-            <Clock className="w-4 h-4 text-orange-500" />
-            Cron Job Examples
-          </h4>
-          <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-xs font-mono">
-            <div><span className="text-orange-400">@Cron('0 */1 * * *')</span> <span className="text-muted-foreground">// Hourly sync</span></div>
-            <div><span className="text-orange-400">@Cron('0 2 * * *')</span> <span className="text-muted-foreground">// Daily cleanup at 2 AM</span></div>
-            <div><span className="text-orange-400">@Cron('0 6 * * 1')</span> <span className="text-muted-foreground">// Weekly report on Monday 6 AM</span></div>
-          </div>
-
-          <h4 className="font-semibold text-sm flex items-center gap-2 mt-4">
-            <Database className="w-4 h-4 text-orange-500" />
-            Storage Dependencies
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <StorageBadge name="PostgreSQL" purpose="R/W" />
-            <StorageBadge name="Redis" purpose="Distributed Lock" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <h4 className="font-semibold text-sm">Queue Messages Produced</h4>
-        <div className="flex flex-wrap gap-2">
-          <QueueBadge name="data.sync" />
-          <QueueBadge name="notification.send" />
-        </div>
-        <p className="text-xs text-muted-foreground">After scheduled trigger, actual execution tasks are sent to worker for processing</p>
-      </div>
-    </div>
-  );
-}
-
-function FTSPodDetail() {
-  return (
-    <div className="space-y-6">
-      <PodHeader
-        name="fts"
-        subtitle="Full-Text Search Service"
-        color="purple"
-        replicas="1"
-        resources="0.5 CPU / 1 GB Memory"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-purple-500" />
-            Core Responsibilities
-          </h4>
-          <div className="space-y-3">
-            <ResponsibilityItem
-              title="Attachment Content Parsing"
-              description="Download Word, PDF, Excel files from OSS and extract text content"
-            />
-            <ResponsibilityItem
-              title="Full-Text Index Creation"
-              description="Build ElasticSearch index from extracted text, support Chinese word segmentation"
-            />
-            <ResponsibilityItem
-              title="Index Maintenance"
-              description="Clean up corresponding index when files are deleted, keep index consistent with data"
-            />
-            <ResponsibilityItem
-              title="Search Service"
-              description="Provide full-text search API with highlighting, pagination, fuzzy matching"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Settings className="w-4 h-4 text-purple-500" />
-            Technical Implementation
-          </h4>
-          <div className="bg-muted/30 rounded-lg p-4 space-y-3 text-sm">
-            <TechItem label="Framework" value="NestJS Microservice" />
-            <TechItem label="Parsers" value="pdf-parse / mammoth / xlsx" />
-            <TechItem label="Tokenizer" value="IK Analyzer (Chinese)" />
-            <TechItem label="Index" value="ElasticSearch 7.x" />
-            <TechItem label="Client" value="@elastic/elasticsearch" />
-          </div>
-
-          <h4 className="font-semibold text-sm flex items-center gap-2 mt-4">
-            <FileText className="w-4 h-4 text-purple-500" />
-            Supported File Types
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <span className="text-xs bg-purple-500/10 text-purple-500 px-2 py-1 rounded">.pdf</span>
-            <span className="text-xs bg-purple-500/10 text-purple-500 px-2 py-1 rounded">.docx</span>
-            <span className="text-xs bg-purple-500/10 text-purple-500 px-2 py-1 rounded">.xlsx</span>
-            <span className="text-xs bg-purple-500/10 text-purple-500 px-2 py-1 rounded">.pptx</span>
-            <span className="text-xs bg-purple-500/10 text-purple-500 px-2 py-1 rounded">.txt</span>
-          </div>
-
-          <h4 className="font-semibold text-sm flex items-center gap-2 mt-4">
-            <Database className="w-4 h-4 text-purple-500" />
-            Storage Dependencies
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <StorageBadge name="OSS" purpose="Download Files" />
-            <StorageBadge name="ElasticSearch" purpose="Index R/W" />
-            <StorageBadge name="Redis" purpose="Queue" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <h4 className="font-semibold text-sm">Queue Messages Consumed</h4>
-        <div className="flex flex-wrap gap-2">
-          <QueueBadge name="fts.index.create" variant="consume" />
-          <QueueBadge name="fts.index.delete" variant="consume" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==================== Helper Components ====================
-
-function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="p-2 bg-primary/10 rounded-lg text-primary">
-        {icon}
-      </div>
-      <div>
-        <h3 className="font-semibold text-foreground">{title}</h3>
-        {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
-      </div>
-    </div>
-  );
-}
-
-function PodOverviewCard({ id, name, subtitle, isSelected, onClick, color, replicas }: {
-  id: string;
-  name: string;
-  subtitle: string;
-  isSelected: boolean;
-  onClick: () => void;
-  color: "blue" | "green" | "orange" | "purple";
-  replicas: string;
-}) {
-  const colorClasses = {
-    blue: { border: "border-blue-500", bg: "bg-blue-500/10", dot: "bg-blue-500" },
-    green: { border: "border-green-500", bg: "bg-green-500/10", dot: "bg-green-500" },
-    orange: { border: "border-orange-500", bg: "bg-orange-500/10", dot: "bg-orange-500" },
-    purple: { border: "border-purple-500", bg: "bg-purple-500/10", dot: "bg-purple-500" },
-  };
-
-  const colors = colorClasses[color];
-
-  return (
-    <button
-      onClick={onClick}
-      className={`text-left p-4 rounded-lg border-2 transition-all ${
-        isSelected 
-          ? `${colors.border} ${colors.bg}` 
-          : "border-border hover:border-muted-foreground/30"
-      }`}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
-          <span className="font-mono font-semibold">{name}</span>
-        </div>
-        <span className="text-xs text-muted-foreground">×{replicas}</span>
-      </div>
-      <p className="text-xs text-muted-foreground">{subtitle}</p>
-    </button>
-  );
-}
-
-function StorageSimple({ icon, name, type }: { icon: React.ReactNode; name: string; type: string }) {
-  return (
-    <div className="flex items-center gap-2 bg-muted/30 border border-border rounded-lg px-3 py-2 transition-all animate-in fade-in-50 duration-200">
-      <div className="text-muted-foreground">{icon}</div>
-      <div>
-        <div className="text-sm font-medium">{name}</div>
-        <div className="text-xs text-muted-foreground">{type}</div>
-      </div>
-    </div>
-  );
-}
-
-function getStorageIcon(type: "pg" | "redis" | "oss" | "es") {
-  const icons = {
-    pg: <Database className="w-4 h-4" />,
-    redis: <Server className="w-4 h-4" />,
-    oss: <HardDrive className="w-4 h-4" />,
-    es: <Search className="w-4 h-4" />,
-  };
-  return icons[type];
-}
-
-function ArrowDown({ label }: { label?: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="w-px h-4 bg-border" />
-      {label && <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">{label}</span>}
-      <div className="w-px h-4 bg-border" />
-      <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-border" />
-    </div>
-  );
-}
-
-function PodHeader({ name, subtitle, color, replicas, resources }: {
-  name: string;
-  subtitle: string;
-  color: "blue" | "green" | "orange" | "purple";
-  replicas: string;
-  resources: string;
-}) {
-  const colorClasses = {
-    blue: "bg-blue-500",
-    green: "bg-green-500",
-    orange: "bg-orange-500",
-    purple: "bg-purple-500",
-  };
-
-  return (
-    <div className="flex items-center justify-between pb-4 border-b border-border">
-      <div className="flex items-center gap-3">
-        <div className={`w-3 h-3 rounded-full ${colorClasses[color]}`} />
-        <div>
-          <h3 className="font-mono font-bold text-lg">{name}</h3>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        </div>
-      </div>
-      <div className="text-right text-sm">
-        <div className="text-muted-foreground">Replicas: <span className="text-foreground font-medium">{replicas}</span></div>
-        <div className="text-muted-foreground">Resources: <span className="text-foreground font-medium">{resources}</span></div>
-      </div>
-    </div>
-  );
-}
-
-function ResponsibilityItem({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="flex items-start gap-2">
-      <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-      <div>
-        <span className="font-medium text-sm">{title}</span>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function TechItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
-    </div>
-  );
-}
-
-function StorageBadge({ name, purpose }: { name: string; purpose: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded">
-      <span className="font-medium">{name}</span>
-      <span className="text-muted-foreground">({purpose})</span>
-    </span>
-  );
-}
-
-function QueueBadge({ name, variant = "produce" }: { name: string; variant?: "produce" | "consume" }) {
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded font-mono ${
-      variant === "produce" 
-        ? "bg-blue-500/10 text-blue-500" 
-        : "bg-green-500/10 text-green-500"
-    }`}>
-      {variant === "consume" && "← "}
-      {name}
-      {variant === "produce" && " →"}
-    </span>
-  );
-}
-
-function QueueCategoryCard({ title, icon, queues, flow, color }: {
+// Expanded Pod Detail Component (shown when pod is clicked)
+const podDetailsConfig: Record<PodType, {
   title: string;
-  icon: React.ReactNode;
-  queues: string[];
-  flow: string;
-  color: "blue" | "green" | "purple" | "amber";
-}) {
-  const colorMap = {
-    blue: "bg-blue-500/10 text-blue-600 border-blue-200",
-    green: "bg-green-500/10 text-green-600 border-green-200",
-    purple: "bg-purple-500/10 text-purple-600 border-purple-200",
-    amber: "bg-amber-500/10 text-amber-600 border-amber-200",
+  color: string;
+  icon: any;
+  responsibilities: { icon: any; text: string }[];
+  tech: { label: string; value: string }[];
+  note?: { icon: any; title: string; content: string; color: string };
+}> = {
+  main: {
+    title: "main Pod Details",
+    color: "blue",
+    icon: Server,
+    responsibilities: [
+      { icon: Network, text: "HTTP API Service: Handle all business REST API requests" },
+      { icon: Zap, text: "WebSocket Connection: Real-time message push" },
+      { icon: Shield, text: "Business Logic: Data validation, permission check" },
+      { icon: GitBranch, text: "Message Producer: Publish async tasks to Redis Queue" },
+      { icon: FileText, text: "File URL Generation: Generate OSS/MinIO access links" },
+      { icon: Search, text: "Search Query: Execute full-text search and return results" }
+    ],
+    tech: [
+      { label: "Framework", value: "NestJS + TypeORM" },
+      { label: "Auth", value: "JWT + RBAC" },
+      { label: "Cache", value: "Redis (ioredis)" },
+      { label: "Logging", value: "Winston / Pino" },
+      { label: "API Docs", value: "Swagger / OpenAPI" }
+    ]
+  },
+  worker: {
+    title: "worker Pod Details",
+    color: "green",
+    icon: Cpu,
+    responsibilities: [
+      { icon: Mail, text: "Email Sending: Call mail service API to send notifications" },
+      { icon: FileOutput, text: "CSV Export: Generate export files and upload to OSS/MinIO" },
+      { icon: Bell, text: "Push Notifications: Send app push, mini-program messages" },
+      { icon: GitBranch, text: "Workflow Execution: Execute approval flow nodes" },
+      { icon: RefreshCw, text: "Data Sync: Sync data with third-party systems" }
+    ],
+    tech: [
+      { label: "Queue", value: "BullMQ / Custom Redis Queue" },
+      { label: "Concurrency", value: "Configurable worker count" },
+      { label: "Retry", value: "Exponential backoff" },
+      { label: "Dead Letter", value: "Failed task isolation" },
+      { label: "Monitoring", value: "Task status tracking" }
+    ]
+  },
+  routine: {
+    title: "routine Pod Details",
+    color: "orange",
+    icon: Clock,
+    responsibilities: [
+      { icon: Trash2, text: "Scheduled Cleanup: Clean expired logs and temp files" },
+      { icon: Activity, text: "Data Maintenance: Periodic maintenance (stats aggregation)" },
+      { icon: Image, text: "Image Generation: Generate report images periodically" },
+      { icon: Activity, text: "Health Check: Periodically check dependency services" },
+      { icon: Timer, text: "Expiry Handling: Handle timeout approvals, expired todos" }
+    ],
+    tech: [
+      { label: "Scheduler", value: "node-cron / @nestjs/schedule" },
+      { label: "Dist Lock", value: "Redis (prevent duplicates)" },
+      { label: "Config", value: "ConfigMap dynamic config" },
+      { label: "Logging", value: "Execution logs" },
+      { label: "Alerting", value: "Failed task alerts" }
+    ]
+  },
+  fts: {
+    title: "fts Pod Details",
+    color: "purple",
+    icon: Search,
+    responsibilities: [
+      { icon: FileText, text: "Attachment Parsing: Download files from OSS/MinIO and extract text" },
+      { icon: Database, text: "ES Index Creation: Build full-text search indexes" },
+      { icon: Trash2, text: "Index Maintenance: Clean up indexes when files are deleted" },
+      { icon: Search, text: "Search Service: Provide full-text search API" }
+    ],
+    tech: [
+      { label: "Parsers", value: "pdf-parse, mammoth, xlsx" },
+      { label: "ES Client", value: "@elastic/elasticsearch" },
+      { label: "Tokenizer", value: "IK Chinese Analyzer" },
+      { label: "Queue", value: "Redis (file parse tasks)" },
+      { label: "Rate Limit", value: "Parse concurrency control" }
+    ]
+  },
+  imgproxy: {
+    title: "imgproxy Pod Details",
+    color: "pink",
+    icon: ImageIcon,
+    responsibilities: [
+      { icon: Crop, text: "Image Cropping: Crop images to specified dimensions" },
+      { icon: Maximize2, text: "Image Scaling: Generate thumbnails at different resolutions" },
+      { icon: Sparkles, text: "Watermarking: Add image watermarks" },
+      { icon: FileType, text: "Format Conversion: WebP/AVIF modern format conversion" }
+    ],
+    tech: [
+      { label: "Engine", value: "imgproxy (Go)" },
+      { label: "Storage", value: "MinIO S3 Protocol" },
+      { label: "Cache", value: "Processed result cache" },
+      { label: "Security", value: "URL signature anti-hotlink" },
+      { label: "Formats", value: "JPEG, PNG, WebP, AVIF, GIF" }
+    ],
+    note: {
+      icon: Home,
+      title: "Standalone Only",
+      content: "Imgproxy is only used in standalone deployment mode to supplement MinIO's lack of image processing. In cloud deployment, OSS has built-in image processing, no Imgproxy needed.",
+      color: "orange"
+    }
+  }
+};
+
+const ExpandedPodDetail = ({ pod, onClose }: { pod: PodType; onClose: () => void }) => {
+  const config = podDetailsConfig[pod];
+  
+  const colorClasses: Record<string, { border: string; text: string; icon: string }> = {
+    blue: { border: "border-border", text: "text-blue-400", icon: "text-blue-400" },
+    green: { border: "border-border", text: "text-green-400", icon: "text-green-400" },
+    orange: { border: "border-border", text: "text-orange-400", icon: "text-orange-400" },
+    purple: { border: "border-border", text: "text-purple-400", icon: "text-purple-400" },
+    pink: { border: "border-border", text: "text-pink-400", icon: "text-pink-400" }
+  };
+  
+  const colors = colorClasses[config.color];
+  const Icon = config.icon;
+  
+  return (
+    <div className={`mt-4 border ${colors.border} rounded-lg p-5 bg-card/50 animate-in slide-in-from-top-2 duration-200`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Icon className={`h-5 w-5 ${colors.icon}`} />
+          <h4 className={`font-semibold ${colors.text}`}>{config.title}</h4>
+        </div>
+        <button 
+          onClick={onClose}
+          className="p-1 hover:bg-background/50 rounded transition-colors"
+        >
+          <X className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </div>
+      
+      {/* Content Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Responsibilities */}
+        <div className="border border-border/50 rounded-lg p-4 bg-background/30">
+          <div className="flex items-center gap-2 mb-3">
+            <config.icon className="h-4 w-4 text-primary" />
+            <h5 className="font-medium text-sm">Core Responsibilities</h5>
+          </div>
+          <div className="space-y-2">
+            {config.responsibilities.map((item, idx) => (
+              <div key={idx} className="flex items-start gap-2 text-sm">
+                <item.icon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Tech Implementation */}
+        <div className="border border-border/50 rounded-lg p-4 bg-background/30">
+          <div className="flex items-center gap-2 mb-3">
+            <Settings className="h-4 w-4 text-primary" />
+            <h5 className="font-medium text-sm">Tech Implementation</h5>
+          </div>
+          <div className="space-y-2">
+            {config.tech.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-mono text-xs bg-background/50 px-2 py-0.5 rounded">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Storage Dependencies */}
+      <div className="mt-4">
+        <StorageDependencies pod={pod} />
+      </div>
+      
+      {/* Optional Note */}
+      {config.note && (
+        <div className={`mt-4 bg-${config.note.color}-500/10 border border-${config.note.color}-500/30 rounded-lg p-3`}>
+          <div className={`flex items-center gap-2 text-${config.note.color}-400 mb-1`}>
+            <config.note.icon className="h-4 w-4" />
+            <span className="font-medium text-sm">{config.note.title}</span>
+          </div>
+          <p className="text-sm text-muted-foreground">{config.note.content}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+// Helper Components
+const SectionHeader = ({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) => (
+  <div className="flex items-center gap-3">
+    <div className="p-2 rounded-lg bg-primary/10">
+      <Icon className="h-5 w-5 text-primary" />
+    </div>
+    <div>
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="text-sm text-muted-foreground">{subtitle}</p>
+    </div>
+  </div>
+);
+
+// Storage usage badges for pod cards
+const StorageUsageBadges = ({ pod }: { pod: PodType }) => {
+  const deps = podStorageMap[pod];
+  const badges: { name: string; color: string }[] = [];
+  
+  if (deps.postgres) badges.push({ name: "PG", color: "bg-blue-500/20 text-blue-400" });
+  if (deps.redis) badges.push({ name: "Redis", color: "bg-red-500/20 text-red-400" });
+  if (deps.objectStorage) badges.push({ name: pod === "imgproxy" ? "MinIO" : "OSS/MinIO", color: "bg-cyan-500/20 text-cyan-400" });
+  if (deps.elasticsearch) badges.push({ name: "ES", color: "bg-yellow-500/20 text-yellow-400" });
+  if (deps.sls) badges.push({ name: "SLS", color: "bg-cyan-500/20 text-cyan-400" });
+  
+  return (
+    <div className="flex flex-wrap gap-1 mt-3 pt-2 border-t border-border/30">
+      <span className="text-[10px] text-muted-foreground mr-1">Uses:</span>
+      {badges.map(b => (
+        <span key={b.name} className={`text-[10px] px-1.5 py-0.5 rounded ${b.color}`}>
+          {b.name}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const PodOverviewCard = ({ 
+  pod,
+  name, 
+  label, 
+  labelColor, 
+  icon: Icon, 
+  color, 
+  description,
+  badge,
+  badgeIcon: BadgeIcon,
+  isSelected,
+  onClick
+}: { 
+  pod: PodType;
+  name: string; 
+  label: string; 
+  labelColor: string; 
+  icon: any; 
+  color: string; 
+  description: string;
+  badge?: string;
+  badgeIcon?: any;
+  isSelected?: boolean;
+  onClick?: () => void;
+}) => {
+  const colorClasses: Record<string, string> = {
+    blue: "border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10",
+    green: "border-green-500/30 bg-green-500/5 hover:bg-green-500/10",
+    orange: "border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10",
+    purple: "border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10",
+    pink: "border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10",
+  };
+  
+  const selectedClasses: Record<string, string> = {
+    blue: "ring-2 ring-blue-500 bg-blue-500/20",
+    green: "ring-2 ring-green-500 bg-green-500/20",
+    orange: "ring-2 ring-orange-500 bg-orange-500/20",
+    purple: "ring-2 ring-purple-500 bg-purple-500/20",
+    pink: "ring-2 ring-pink-500 bg-pink-500/20",
+  };
+  
+  const iconColorClasses: Record<string, string> = {
+    blue: "text-blue-400",
+    green: "text-green-400",
+    orange: "text-orange-400",
+    purple: "text-purple-400",
+    pink: "text-pink-400",
   };
   
   return (
-    <div className={`rounded-lg border p-4 space-y-3 ${colorMap[color]}`}>
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="font-medium text-sm">{title}</span>
+    <div 
+      className={`relative border rounded-lg p-4 transition-all cursor-pointer ${colorClasses[color]} ${isSelected ? selectedClasses[color] : ''}`}
+      onClick={onClick}
+    >
+      {/* Label badge */}
+      <span className={`absolute -top-2 left-3 px-2 py-0.5 text-xs font-medium text-white rounded ${labelColor}`}>
+        {label}
+      </span>
+      
+      {/* Deployment mode badge */}
+      {badge && (
+        <span className="absolute -top-2 right-3 px-2 py-0.5 text-xs font-medium bg-orange-500 text-white rounded flex items-center gap-1">
+          {BadgeIcon && <BadgeIcon className="h-3 w-3" />}
+          {badge}
+        </span>
+      )}
+      
+      <div className="flex items-center gap-2 mt-2 mb-2">
+        <Icon className={`h-5 w-5 ${iconColorClasses[color]}`} />
+        <span className="font-semibold">{name}</span>
       </div>
-      <div className="space-y-1.5">
-        {queues.map((q) => (
-          <div key={q} className="font-mono text-xs bg-background/60 px-2 py-1 rounded">
-            {q}
-          </div>
-        ))}
-      </div>
-      <div className="text-xs opacity-75">{flow}</div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+      
+      {/* Storage usage badges */}
+      <StorageUsageBadges pod={pod} />
     </div>
   );
-}
+};
 
-function K8sResourceGroup({ title, resources }: {
-  title: string;
-  resources: { type: string; name: string; detail: string }[];
-}) {
+const StorageCard = ({ 
+  name, 
+  type, 
+  icon: Icon, 
+  color, 
+  description, 
+  consumers,
+  pvc,
+  selectedPod
+}: { 
+  name: string; 
+  type: string; 
+  icon: any; 
+  color: string; 
+  description: string; 
+  consumers: string[];
+  pvc?: string;
+  selectedPod?: PodType | null;
+}) => {
+  const isUsed = selectedPod ? consumers.includes(selectedPod) : null;
+  
+  const colorClasses: Record<string, string> = {
+    blue: "border-blue-500/30 bg-blue-500/5",
+    red: "border-red-500/30 bg-red-500/5",
+    yellow: "border-yellow-500/30 bg-yellow-500/5",
+    orange: "border-orange-500/30 bg-orange-500/5",
+    cyan: "border-cyan-500/30 bg-cyan-500/5",
+  };
+  
+  const activeClasses: Record<string, string> = {
+    blue: "ring-2 ring-blue-500 bg-blue-500/20",
+    red: "ring-2 ring-red-500 bg-red-500/20",
+    yellow: "ring-2 ring-yellow-500 bg-yellow-500/20",
+    orange: "ring-2 ring-orange-500 bg-orange-500/20",
+    cyan: "ring-2 ring-cyan-500 bg-cyan-500/20",
+  };
+  
+  const iconColorClasses: Record<string, string> = {
+    blue: "text-blue-400",
+    red: "text-red-400",
+    yellow: "text-yellow-400",
+    orange: "text-orange-400",
+    cyan: "text-cyan-400",
+  };
+  
+  // 根据选中状态决定样式
+  const cardStyle = isUsed === null 
+    ? colorClasses[color] 
+    : isUsed 
+      ? `${colorClasses[color]} ${activeClasses[color]}` 
+      : `${colorClasses[color]} opacity-30`;
+  
   return (
-    <div className="bg-muted/30 border border-border rounded-lg p-4 space-y-3">
-      <h4 className="font-medium text-foreground text-sm">{title}</h4>
-      <div className="space-y-2">
-        {resources.map((resource, i) => (
-          <div key={i} className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-primary font-mono">{resource.type}</span>
-              <span className="text-muted-foreground">{resource.name}</span>
-            </div>
-            <span className="text-muted-foreground/70">{resource.detail}</span>
+    <div className={`border rounded-lg p-3 transition-all ${cardStyle}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Icon className={`h-4 w-4 ${iconColorClasses[color]}`} />
+          <span className="font-medium text-sm">{name}</span>
+        </div>
+        <span className="text-xs text-muted-foreground bg-background/50 px-2 py-0.5 rounded">{type}</span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-2">{description}</p>
+      {pvc && (
+        <div className="text-xs text-orange-400 mb-2 flex items-center gap-1">
+          <HardDrive className="h-3 w-3" />
+          PVC: {pvc}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-1">
+        {consumers.map(c => (
+          <span 
+            key={c} 
+            className={`text-xs px-1.5 py-0.5 rounded ${selectedPod === c ? 'bg-primary text-primary-foreground' : 'bg-background/50'}`}
+          >
+            {c}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const BenefitCard = ({ icon: Icon, title, description }: { icon: any; title: string; description: string }) => (
+  <div className="border border-border/50 rounded-lg p-4 bg-card/50">
+    <div className="flex items-center gap-2 mb-2">
+      <Icon className="h-4 w-4 text-primary" />
+      <span className="font-medium">{title}</span>
+    </div>
+    <p className="text-sm text-muted-foreground">{description}</p>
+  </div>
+);
+
+const K8sResourceGroup = ({ title, items }: { title: string; items: { name: string; type: string; badge?: string }[] }) => (
+  <div className="border border-border/50 rounded-lg p-4 bg-card/30">
+    <h4 className="font-medium mb-3 text-sm">{title}</h4>
+    <div className="space-y-2">
+      {items.map(item => (
+        <div key={item.name} className="flex items-center justify-between text-xs">
+          <span className="font-mono">{item.name}</span>
+          <div className="flex items-center gap-1">
+            {item.badge && (
+              <span className="px-1 py-0.5 bg-orange-500/20 text-orange-400 rounded text-[10px]">
+                {item.badge}
+              </span>
+            )}
+            <span className="text-muted-foreground">{item.type}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const DetailSection = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
+  <div className="border border-border/50 rounded-lg p-4 bg-card/30">
+    <div className="flex items-center gap-2 mb-4">
+      <Icon className="h-4 w-4 text-primary" />
+      <h4 className="font-medium">{title}</h4>
+    </div>
+    <div className="space-y-2">{children}</div>
+  </div>
+);
+
+const ResponsibilityItem = ({ icon: Icon, text }: { icon: any; text: string }) => (
+  <div className="flex items-start gap-2 text-sm">
+    <Icon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+    <span>{text}</span>
+  </div>
+);
+
+const TechItem = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-center justify-between text-sm">
+    <span className="text-muted-foreground">{label}</span>
+    <span className="font-mono text-xs bg-background/50 px-2 py-0.5 rounded">{value}</span>
+  </div>
+);
+
+const StorageDependencies = ({ pod }: { pod: PodType }) => {
+  const deps = podStorageMap[pod];
+  const items = [
+    deps.postgres && { icon: Database, name: "PostgreSQL", desc: deps.postgres, color: "blue" },
+    deps.redis && { icon: Zap, name: "Redis", desc: deps.redis, color: "red" },
+    deps.objectStorage && { icon: HardDrive, name: "OSS/MinIO", desc: deps.objectStorage, color: "cyan" },
+    deps.elasticsearch && { icon: Search, name: "ElasticSearch", desc: deps.elasticsearch, color: "yellow" },
+    deps.sls && { icon: FileText, name: "SLS", desc: deps.sls, color: "cyan" },
+  ].filter(Boolean) as { icon: any; name: string; desc: string; color: string }[];
+  
+  const colorClasses: Record<string, string> = {
+    blue: "text-blue-400",
+    red: "text-red-400",
+    cyan: "text-cyan-400",
+    yellow: "text-yellow-400",
+  };
+  
+  return (
+    <div className="border border-border/50 rounded-lg p-4 bg-card/30">
+      <div className="flex items-center gap-2 mb-4">
+        <Database className="h-4 w-4 text-primary" />
+        <h4 className="font-medium">Storage Dependencies</h4>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {items.map(item => (
+          <div key={item.name} className="flex items-center gap-2 text-sm">
+            <item.icon className={`h-4 w-4 ${colorClasses[item.color]}`} />
+            <span className="font-medium">{item.name}</span>
+            <span className="text-muted-foreground text-xs">- {item.desc}</span>
           </div>
         ))}
       </div>
     </div>
   );
-}
+};
+
+export default TenantCoreArchitecture;
