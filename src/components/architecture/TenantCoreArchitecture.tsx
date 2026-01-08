@@ -105,60 +105,182 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
           </div>
         </div>
         
-        <div className="bg-card rounded-lg p-4 border mb-4">
-          <p className="text-sm text-muted-foreground mb-4">
-            The Core System is a monorepo NestJS application that provides RESTful APIs for all client platforms.
-            It consists of <strong>1 Core Pod</strong> (Main) and <strong>4 Satellite Pods</strong> (Worker, Routine, FTS, Imgproxy),
-            communicating via HTTP and Redis Message Queue.
-          </p>
+        {/* Horizontal Architecture Diagram */}
+        <div className="bg-card rounded-lg border overflow-hidden">
+          {/* Legend */}
+          <div className="flex items-center gap-6 px-4 py-2 bg-secondary/30 border-b text-xs">
+            <span className="text-muted-foreground font-medium">Legend:</span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-md border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+              </div>
+              <span className="text-muted-foreground">Stateless Pod</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-md border-2 border-orange-500 bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
+                <Database size={10} className="text-orange-600" />
+              </div>
+              <span className="text-muted-foreground">Stateful</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full border-2 border-slate-400 bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                <Monitor size={10} className="text-slate-600" />
+              </div>
+              <span className="text-muted-foreground">Client</span>
+            </div>
+          </div>
           
-          {/* Simple Architecture Diagram */}
-          <div className="bg-secondary/30 rounded-lg p-4">
-            <div className="flex flex-col items-center gap-3 text-xs">
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="font-medium text-muted-foreground mb-1">Clients</div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={onNavigateToPCClient}
-                      className="px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 transition-colors flex items-center gap-1"
-                    >
-                      <Monitor size={12} /> PC
-                    </button>
-                    <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">
-                      <MessageSquare size={12} className="inline" /> Mini
-                    </span>
-                    <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">
-                      <Smartphone size={12} className="inline" /> Mobile
-                    </span>
+          {/* Main Diagram */}
+          <div className="p-6">
+            <div className="relative flex items-center justify-between gap-2">
+              {/* Clients Column */}
+              <div className="flex flex-col items-center gap-3 min-w-[80px]">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Clients</div>
+                <button 
+                  onClick={onNavigateToPCClient}
+                  className="flex flex-col items-center gap-1 hover:scale-105 transition-transform"
+                  title="View PC Client Architecture"
+                >
+                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center shadow-sm">
+                    <Monitor size={16} className="text-emerald-600" />
+                  </div>
+                  <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">PC</span>
+                </button>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-10 h-10 rounded-full border-2 border-blue-400 bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shadow-sm">
+                    <MessageSquare size={16} className="text-blue-600" />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Mini</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-10 h-10 rounded-full border-2 border-purple-400 bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center shadow-sm">
+                    <Smartphone size={16} className="text-purple-600" />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Mobile</span>
+                </div>
+              </div>
+
+              {/* Arrow: Clients → Main */}
+              <div className="flex-1 flex items-center justify-center max-w-[60px]">
+                <svg className="w-full h-8" viewBox="0 0 60 32">
+                  <defs>
+                    <marker id="arrowhead1" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" className="fill-slate-400" />
+                    </marker>
+                  </defs>
+                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-slate-400" strokeWidth="2" markerEnd="url(#arrowhead1)" />
+                  <text x="25" y="10" className="fill-slate-500 text-[8px]" textAnchor="middle">HTTP</text>
+                </svg>
+              </div>
+
+              {/* Core Pod */}
+              <div className="flex flex-col items-center min-w-[100px]">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Core</div>
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-lg border-2 border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/30 flex items-center justify-center shadow-lg">
+                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Server size={12} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                    <span className="text-[8px] text-white font-bold">✓</span>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 mt-1">Main Pod</span>
+                <span className="text-[10px] text-muted-foreground">API Gateway</span>
+              </div>
+
+              {/* Arrow: Main → Redis MQ */}
+              <div className="flex-1 flex items-center justify-center max-w-[60px]">
+                <svg className="w-full h-8" viewBox="0 0 60 32">
+                  <defs>
+                    <marker id="arrowhead2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" className="fill-slate-400" />
+                    </marker>
+                  </defs>
+                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-slate-400" strokeWidth="2" markerEnd="url(#arrowhead2)" />
+                  <text x="25" y="10" className="fill-slate-500 text-[8px]" textAnchor="middle">Publish</text>
+                </svg>
+              </div>
+
+              {/* Redis MQ */}
+              <div className="flex flex-col items-center min-w-[90px]">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Queue</div>
+                <div className="w-14 h-14 rounded-lg border-2 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/30 flex items-center justify-center shadow-lg">
+                  <Database size={20} className="text-orange-600" />
+                </div>
+                <span className="text-xs font-semibold text-orange-700 dark:text-orange-400 mt-1">Redis MQ</span>
+                <span className="text-[10px] text-muted-foreground">Stateful</span>
+              </div>
+
+              {/* Arrow: Redis MQ → Satellites */}
+              <div className="flex-1 flex items-center justify-center max-w-[60px]">
+                <svg className="w-full h-8" viewBox="0 0 60 32">
+                  <defs>
+                    <marker id="arrowhead3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" className="fill-slate-400" />
+                    </marker>
+                  </defs>
+                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-slate-400" strokeWidth="2" markerEnd="url(#arrowhead3)" />
+                  <text x="25" y="10" className="fill-slate-500 text-[8px]" textAnchor="middle">Consume</text>
+                </svg>
+              </div>
+
+              {/* Satellite Pods */}
+              <div className="flex flex-col items-center min-w-[180px]">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Satellites</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-11 h-11 rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-900/30 flex items-center justify-center shadow-sm">
+                      <div className="w-3.5 h-3.5 rounded-full bg-green-500" />
+                    </div>
+                    <span className="text-[10px] font-medium text-green-700 dark:text-green-400">Worker</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-11 h-11 rounded-lg border-2 border-amber-500 bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center shadow-sm">
+                      <div className="w-3.5 h-3.5 rounded-full bg-amber-500" />
+                    </div>
+                    <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">Routine</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-11 h-11 rounded-lg border-2 border-purple-500 bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center shadow-sm">
+                      <div className="w-3.5 h-3.5 rounded-full bg-purple-500" />
+                    </div>
+                    <span className="text-[10px] font-medium text-purple-700 dark:text-purple-400">FTS</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 relative">
+                    <div className="w-11 h-11 rounded-lg border-2 border-pink-500 bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center shadow-sm">
+                      <div className="w-3.5 h-3.5 rounded-full bg-pink-500" />
+                    </div>
+                    <span className="text-[10px] font-medium text-pink-700 dark:text-pink-400">Imgproxy</span>
+                    <div className="absolute -top-1 -right-1 px-1 py-0.5 rounded text-[7px] font-bold bg-orange-500 text-white">SA</div>
                   </div>
                 </div>
               </div>
-              
-              <ArrowRight size={16} className="text-muted-foreground rotate-90" />
-              
-              <div className="flex items-center gap-4">
-                <div className="px-4 py-2 rounded-lg bg-blue-500 text-white font-medium flex items-center gap-2">
-                  <Server size={14} />
-                  Main Pod (API Gateway)
+            </div>
+
+            {/* Storage Layer Bar */}
+            <div className="mt-6 pt-4 border-t border-dashed">
+              <div className="flex items-center justify-center gap-4">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Storage:</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/30">
+                    <Database size={12} className="text-blue-500" />
+                    <span className="text-xs text-blue-700 dark:text-blue-400">PostgreSQL</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 border border-red-500/30">
+                    <Zap size={12} className="text-red-500" />
+                    <span className="text-xs text-red-700 dark:text-red-400">Redis</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/10 border border-yellow-500/30">
+                    <Search size={12} className="text-yellow-600" />
+                    <span className="text-xs text-yellow-700 dark:text-yellow-400">ES</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-orange-500/10 border border-orange-500/30">
+                    <HardDrive size={12} className="text-orange-500" />
+                    <span className="text-xs text-orange-700 dark:text-orange-400">OSS/MinIO</span>
+                  </div>
                 </div>
-              </div>
-              
-              <ArrowRight size={16} className="text-muted-foreground rotate-90" />
-              
-              <div className="flex items-center gap-2">
-                <div className="px-3 py-1.5 rounded bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-medium">
-                  <Zap size={12} className="inline mr-1" />
-                  Redis MQ
-                </div>
-              </div>
-              
-              <ArrowRight size={16} className="text-muted-foreground rotate-90" />
-              
-              <div className="flex gap-2">
-                <span className="px-2 py-1 rounded bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">Worker</span>
-                <span className="px-2 py-1 rounded bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">Routine</span>
-                <span className="px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">FTS</span>
               </div>
             </div>
           </div>
@@ -237,6 +359,20 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
         </div>
       </div>
 
+      {/* System Data Flow - Standalone Section */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <Network size={18} />
+          </div>
+          <div>
+            <h4 className="font-semibold text-base">System Data Flow</h4>
+            <p className="text-xs text-muted-foreground">Complete interaction flow between all system components</p>
+          </div>
+        </div>
+        <SystemFlowDiagram />
+      </div>
+
       {/* Tabbed Content */}
       <Tabs defaultValue="compute" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -246,10 +382,6 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
         </TabsList>
         
         <TabsContent value="compute" className="mt-6">
-          {/* System Flow Diagram */}
-          <div className="bg-card border border-border rounded-xl p-6 mb-6">
-            <SystemFlowDiagram />
-          </div>
           
           {/* Pod Overview - 5 columns in one row */}
           <div className="bg-card border border-border rounded-xl p-6">
@@ -626,20 +758,6 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
                   </div>
                 </div>
                 
-                {/* Workflow Queue */}
-                <div className="border border-orange-500/20 rounded-lg p-4 bg-orange-500/5">
-                  <h5 className="text-xs font-semibold text-orange-400 mb-3 flex items-center gap-2">
-                    <GitBranch size={14} />
-                    Workflow Queue
-                  </h5>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-3 bg-background/50 rounded p-2">
-                      <code className="font-mono text-orange-300 min-w-[140px]">workflow.trigger</code>
-                      <span className="text-muted-foreground">Trigger approval workflows or automation rules on form submit</span>
-                      <span className="ml-auto text-green-400">→ Worker</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -689,10 +807,10 @@ const podDetailsConfig: Record<PodType, {
       { icon: Search, text: "Search Query: Execute full-text search and return results" }
     ],
     tech: [
-      { label: "Framework", value: "NestJS + TypeORM" },
+      { label: "Framework", value: "NestJS + Drizzle ORM" },
       { label: "Auth", value: "JWT + RBAC" },
       { label: "Cache", value: "Redis (ioredis)" },
-      { label: "Logging", value: "Winston / Pino" },
+      { label: "Logging", value: "Alibaba Cloud SLS" },
       { label: "API Docs", value: "Swagger / OpenAPI" }
     ]
   },
@@ -747,7 +865,7 @@ const podDetailsConfig: Record<PodType, {
     tech: [
       { label: "Parsers", value: "pdf-parse, mammoth, xlsx" },
       { label: "ES Client", value: "@elastic/elasticsearch" },
-      { label: "Tokenizer", value: "IK Chinese Analyzer" },
+      { label: "Tokenizer", value: "IK Analyzer + Kuromoji" },
       { label: "Queue", value: "Redis (file parse tasks)" },
       { label: "Rate Limit", value: "Parse concurrency control" }
     ]

@@ -25,9 +25,6 @@ flowchart LR
       Q5["fts.index.create"]
       Q6["fts.index.delete"]
     end
-    subgraph WorkflowQ["Workflow"]
-      Q7["workflow.trigger"]
-    end
   end
 
   subgraph Consumers["🟢 Consumers"]
@@ -38,13 +35,11 @@ flowchart LR
 
   MAIN --> NotifyQ
   MAIN --> DataQ
-  MAIN --> WorkflowQ
   ROUTINE --> DataQ
   ROUTINE --> SearchQ
 
   NotifyQ --> WORKER
   DataQ --> WORKER
-  WorkflowQ --> WORKER
   SearchQ --> FTS
 `;
 

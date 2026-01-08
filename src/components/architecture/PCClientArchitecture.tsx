@@ -99,10 +99,12 @@ export function PCClientArchitecture({ onNavigateToCoreSystem }: PCClientArchite
           Technology Stack
         </h4>
         <div className="flex flex-wrap gap-2">
-          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">Next.js 14+</Badge>
-          <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">React 18</Badge>
+          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">Next.js</Badge>
+          <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">React</Badge>
           <Badge className="bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300">TypeScript</Badge>
           <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">Tailwind CSS</Badge>
+          <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">Ant Design</Badge>
+          <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300">shadcn/ui</Badge>
           <Badge variant="outline">BFF Proxy Pattern</Badge>
           <Badge variant="outline">SSR / CSR Hybrid</Badge>
         </div>
