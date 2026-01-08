@@ -1,4 +1,4 @@
-# Lowcode Cloud Platform Architecture
+# Nata Architecture Documentation
 
 A comprehensive architecture documentation site for a multi-tenant cloud platform deployed on Alibaba Cloud.
 
@@ -20,7 +20,6 @@ This project is automatically deployed to **GitHub Pages** using **GitHub Action
 
 1. **Automatic Deployment**: When you push to the `main` branch, GitHub Actions automatically:
 
-   - Builds the project (`npm run build`)
    - Deploys to GitHub Pages
    - Handles SPA routing with 404.html trick
 
