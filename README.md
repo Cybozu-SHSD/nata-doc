@@ -12,7 +12,6 @@ This project provides an interactive visualization of the Lowcode Cloud Platform
 - **Tenant (Data Plane)** - Standalone backend for each tenant
 - **Observability** - Logging, monitoring, and dashboard system
 
-
 ## Deployment
 
 This project is automatically deployed to **GitHub Pages** using **GitHub Actions**.
@@ -20,6 +19,7 @@ This project is automatically deployed to **GitHub Pages** using **GitHub Action
 ### How it works
 
 1. **Automatic Deployment**: When you push to the `main` branch, GitHub Actions automatically:
+
    - Builds the project (`npm run build`)
    - Deploys to GitHub Pages
    - Handles SPA routing with 404.html trick
@@ -28,7 +28,7 @@ This project is automatically deployed to **GitHub Pages** using **GitHub Action
 
 3. **Live Site**: The site is available at:
    ```
-   https://Cybozu-SHSD.github.io/Lowcode-Cloud-Platform-Architecture
+   https://Cybozu-SHSD.github.io/nata-doc
    ```
 
 ### GitHub Pages Setup
