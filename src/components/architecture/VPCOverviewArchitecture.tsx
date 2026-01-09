@@ -11,6 +11,7 @@ import {
   Headphones,
   ArrowRight
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function VPCOverviewArchitecture() {
   return (
@@ -107,12 +108,13 @@ export function VPCOverviewArchitecture() {
         {/* Internal Communication */}
         <div className="mt-6 pt-4 border-t border-border/50">
           <div className="text-xs text-muted-foreground mb-3 font-medium">Internal Communication (K8s Service Discovery)</div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
             <CommItem from="Tenant Mgmt" to="All" method="Helm/Config" />
             <CommItem from="Broker" to="Tenant" method="OAuth Redirect" />
             <CommItem from="API Platform" to="Tenant" method="Token + Route" />
             <CommItem from="Observability" to="All" method="Pull Metrics" />
             <CommItem from="All" to="Persistence" method="DB/OSS/Redis" />
+            <CommItem from="PC Client" to="Backend" method="Private ALB + mTLS" highlight />
           </div>
         </div>
       </div>
@@ -139,6 +141,14 @@ export function VPCOverviewArchitecture() {
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-monitoring" />
           <span>Observability</span>
+        </div>
+        <div className="flex items-center gap-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded">
+          <div className="w-3 h-3 rounded bg-green-500" />
+          <span className="text-green-700 dark:text-green-300">Public Exposure</span>
+        </div>
+        <div className="flex items-center gap-2 px-2 py-1 bg-orange-100 dark:bg-orange-900/30 rounded">
+          <div className="w-3 h-3 rounded bg-orange-500" />
+          <span className="text-orange-700 dark:text-orange-300">Private Network</span>
         </div>
       </div>
     </div>
@@ -213,15 +223,23 @@ function SystemCard({ icon, title, color, description, features }: SystemCardPro
   );
 }
 
-function CommItem({ from, to, method }: { from: string; to: string; method: string }) {
+function CommItem({ from, to, method, highlight }: { from: string; to: string; method: string; highlight?: boolean }) {
   return (
-    <div className="bg-card rounded-lg p-2 border text-center">
+    <div className={cn(
+      "rounded-lg p-2 border text-center",
+      highlight 
+        ? "bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700" 
+        : "bg-card"
+    )}>
       <div className="text-muted-foreground text-[10px]">
         <span className="font-medium text-foreground">{from}</span>
         <span className="mx-1">→</span>
         <span className="font-medium text-foreground">{to}</span>
       </div>
-      <div className="text-primary text-[10px] mt-0.5">{method}</div>
+      <div className={cn(
+        "text-[10px] mt-0.5",
+        highlight ? "text-orange-600 dark:text-orange-400 font-medium" : "text-primary"
+      )}>{method}</div>
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   Mail,
   MessageSquare,
   ArrowDown,
+  ArrowRight,
   Settings,
   User,
   Workflow,
@@ -149,14 +150,49 @@ export function DataPlaneArchitecture({ onNavigateToPCClient, onNavigateToCoreSy
 
       <FlowArrow />
 
-      {/* ALB */}
-      <div className="flex justify-center">
-        <div className="bg-slate-700 dark:bg-slate-800 text-white rounded-xl px-6 py-3 text-center">
-          <div className="flex items-center justify-center gap-2 font-semibold text-sm">
-            <Server size={16} />
-            ALB (Application Load Balancer)
+      {/* Dual ALB Architecture */}
+      <div className="flex flex-col md:flex-row justify-center items-center gap-3">
+        {/* Public ALB */}
+        <div className="bg-green-600 dark:bg-green-700 text-white rounded-xl px-5 py-3 text-center relative">
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-green-400 text-green-900 text-[9px] font-semibold rounded-full flex items-center gap-1">
+            <Globe size={10} /> Public
           </div>
-          <div className="text-xs text-slate-300 mt-1">L7 Load Balancing | HTTPS Termination | Path Routing</div>
+          <div className="flex items-center justify-center gap-2 font-semibold text-sm mt-1">
+            <Server size={16} />
+            Public ALB
+          </div>
+          <div className="text-xs text-green-100 mt-1">HTTPS | *.domain.com</div>
+          <div className="text-[10px] text-green-200 mt-1">→ PC Client Pods</div>
+        </div>
+
+        <ArrowRight size={18} className="text-muted-foreground hidden md:block" />
+        <ArrowDown size={18} className="text-muted-foreground md:hidden" />
+
+        {/* Private ALB */}
+        <div className="bg-orange-600 dark:bg-orange-700 text-white rounded-xl px-5 py-3 text-center relative">
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-orange-400 text-orange-900 text-[9px] font-semibold rounded-full flex items-center gap-1">
+            <Lock size={10} /> Private
+          </div>
+          <div className="flex items-center justify-center gap-2 font-semibold text-sm mt-1">
+            <Shield size={16} />
+            Private ALB
+          </div>
+          <div className="text-xs text-orange-100 mt-1">mTLS / HMAC Validation</div>
+          <div className="text-[10px] text-orange-200 mt-1">→ Backend API Pods</div>
+        </div>
+      </div>
+
+      {/* ALB Routing Legend */}
+      <div className="flex justify-center">
+        <div className="flex flex-wrap gap-4 text-xs bg-card rounded-lg px-4 py-2 border">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <span>Public: tenant-xxx.domain.com → PC Client</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-orange-500" />
+            <span>Private: PC Client → Backend (mTLS/HMAC)</span>
+          </div>
         </div>
       </div>
 
@@ -579,25 +615,38 @@ function NamespaceBox({ name, color }: { name: string; color: "blue" | "rose" })
         <Container size={12} className="inline mr-1" />
         namespace: {name}
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        <MicroserviceBadge name="main" type="core" />
-        <MicroserviceBadge name="worker" type="satellite" />
-        <MicroserviceBadge name="routine" type="satellite" />
-        <MicroserviceBadge name="fts" type="satellite" />
+      {/* Frontend - PC Client */}
+      <div className="mb-2">
+        <div className="text-[9px] text-muted-foreground mb-1">Frontend</div>
+        <MicroserviceBadge name="pc-client" type="frontend" />
+      </div>
+      {/* Backend Services */}
+      <div>
+        <div className="text-[9px] text-muted-foreground mb-1">Backend</div>
+        <div className="flex flex-wrap gap-1.5">
+          <MicroserviceBadge name="main" type="core" />
+          <MicroserviceBadge name="worker" type="satellite" />
+          <MicroserviceBadge name="routine" type="satellite" />
+          <MicroserviceBadge name="fts" type="satellite" />
+        </div>
       </div>
     </div>
   );
 }
 
-function MicroserviceBadge({ name, type }: { name: string; type: "core" | "satellite" }) {
+function MicroserviceBadge({ name, type }: { name: string; type: "core" | "satellite" | "frontend" }) {
+  const styles = {
+    core: "bg-blue-500 text-white",
+    satellite: "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300",
+    frontend: "bg-emerald-500 text-white"
+  };
+  
   return (
     <span className={cn(
       "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium",
-      type === "core" 
-        ? "bg-blue-500 text-white" 
-        : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+      styles[type]
     )}>
-      <Server size={10} />
+      {type === "frontend" ? <Monitor size={10} /> : <Server size={10} />}
       {name}
     </span>
   );

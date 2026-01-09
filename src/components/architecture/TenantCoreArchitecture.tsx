@@ -108,7 +108,7 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
         {/* Horizontal Architecture Diagram */}
         <div className="bg-card rounded-lg border overflow-hidden">
           {/* Legend */}
-          <div className="flex items-center gap-6 px-4 py-2 bg-secondary/30 border-b text-xs">
+          <div className="flex items-center gap-4 px-4 py-2 bg-secondary/30 border-b text-xs flex-wrap">
             <span className="text-muted-foreground font-medium">Legend:</span>
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-md border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
@@ -127,6 +127,14 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
                 <Monitor size={10} className="text-slate-600" />
               </div>
               <span className="text-muted-foreground">Client</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-8 border-t-2 border-slate-400"></div>
+              <span className="text-muted-foreground">Sync</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-8 border-t-2 border-dashed border-orange-400"></div>
+              <span className="text-muted-foreground">Async</span>
             </div>
           </div>
           
@@ -160,101 +168,111 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
                 </div>
               </div>
 
-              {/* Arrow: Clients → Main */}
-              <div className="flex-1 flex items-center justify-center max-w-[60px]">
-                <svg className="w-full h-8" viewBox="0 0 60 32">
+              {/* Bidirectional Arrow: Clients ↔ Main (Request/Response) */}
+              <div className="flex-1 flex items-center justify-center max-w-[70px]">
+                <svg className="w-full h-12" viewBox="0 0 70 48">
                   <defs>
-                    <marker id="arrowhead1" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
-                      <polygon points="0 0, 8 3, 0 6" className="fill-slate-400" />
+                    <marker id="arrowRight" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                      <polygon points="0 0, 8 3, 0 6" className="fill-green-500" />
+                    </marker>
+                    <marker id="arrowLeft" markerWidth="8" markerHeight="6" refX="2" refY="3" orient="auto">
+                      <polygon points="8 0, 0 3, 8 6" className="fill-green-500" />
                     </marker>
                   </defs>
-                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-slate-400" strokeWidth="2" markerEnd="url(#arrowhead1)" />
-                  <text x="25" y="10" className="fill-slate-500 text-[8px]" textAnchor="middle">HTTP</text>
+                  {/* Request arrow (top) */}
+                  <line x1="5" y1="18" x2="55" y2="18" className="stroke-green-500" strokeWidth="2" markerEnd="url(#arrowRight)" />
+                  <text x="35" y="12" className="fill-green-600 text-[7px] font-medium" textAnchor="middle">Request</text>
+                  {/* Response arrow (bottom) */}
+                  <line x1="55" y1="30" x2="5" y2="30" className="stroke-green-500" strokeWidth="2" markerEnd="url(#arrowLeft)" />
+                  <text x="35" y="42" className="fill-green-600 text-[7px] font-medium" textAnchor="middle">Response</text>
                 </svg>
               </div>
 
-              {/* Core Pod */}
-              <div className="flex flex-col items-center min-w-[100px]">
+              {/* Core Pod - Larger to show importance */}
+              <div className="flex flex-col items-center min-w-[110px]">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Core</div>
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-lg border-2 border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/30 flex items-center justify-center shadow-lg">
-                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                      <Server size={12} className="text-white" />
+                  <div className="w-20 h-20 rounded-xl border-3 border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/30 flex items-center justify-center shadow-xl">
+                    <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Server size={16} className="text-white" />
                     </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-white dark:border-slate-800 flex items-center justify-center">
-                    <span className="text-[8px] text-white font-bold">✓</span>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                    <span className="text-[9px] text-white font-bold">✓</span>
                   </div>
                 </div>
-                <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 mt-1">Main Pod</span>
-                <span className="text-[10px] text-muted-foreground">API Gateway</span>
+                <span className="text-sm font-bold text-blue-700 dark:text-blue-400 mt-2">Main Pod</span>
+                <span className="text-[10px] text-muted-foreground">API Gateway & Business</span>
               </div>
 
-              {/* Arrow: Main → Redis MQ */}
+              {/* Arrow: Main → Redis MQ (Async Only - Dashed) */}
               <div className="flex-1 flex items-center justify-center max-w-[60px]">
                 <svg className="w-full h-8" viewBox="0 0 60 32">
                   <defs>
                     <marker id="arrowhead2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
-                      <polygon points="0 0, 8 3, 0 6" className="fill-slate-400" />
+                      <polygon points="0 0, 8 3, 0 6" className="fill-orange-400" />
                     </marker>
                   </defs>
-                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-slate-400" strokeWidth="2" markerEnd="url(#arrowhead2)" />
-                  <text x="25" y="10" className="fill-slate-500 text-[8px]" textAnchor="middle">Publish</text>
+                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-orange-400" strokeWidth="2" strokeDasharray="4 2" markerEnd="url(#arrowhead2)" />
+                  <text x="25" y="10" className="fill-orange-500 text-[7px] font-medium" textAnchor="middle">Async Only</text>
                 </svg>
               </div>
 
-              {/* Redis MQ */}
-              <div className="flex flex-col items-center min-w-[90px]">
-                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Queue</div>
-                <div className="w-14 h-14 rounded-lg border-2 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/30 flex items-center justify-center shadow-lg">
-                  <Database size={20} className="text-orange-600" />
+              {/* Async Processing Group - Boxed */}
+              <div className="border-2 border-dashed border-orange-300 dark:border-orange-700 rounded-xl p-3 bg-orange-50/30 dark:bg-orange-900/10">
+                <div className="flex items-center gap-4">
+                  {/* Redis MQ */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-lg border-2 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/30 flex items-center justify-center shadow-md">
+                      <Database size={18} className="text-orange-600" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-orange-700 dark:text-orange-400 mt-1">Redis MQ</span>
+                  </div>
+
+                  {/* Arrow inside box */}
+                  <svg className="w-8 h-6" viewBox="0 0 32 24">
+                    <defs>
+                      <marker id="arrowhead3" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                        <polygon points="0 0, 6 2.5, 0 5" className="fill-slate-400" />
+                      </marker>
+                    </defs>
+                    <line x1="0" y1="12" x2="24" y2="12" className="stroke-slate-400" strokeWidth="1.5" markerEnd="url(#arrowhead3)" />
+                  </svg>
+
+                  {/* Satellite Pods - Smaller */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Satellites</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="w-8 h-8 rounded-md border-2 border-green-500 bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                        </div>
+                        <span className="text-[8px] text-green-700 dark:text-green-400">Worker</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="w-8 h-8 rounded-md border-2 border-amber-500 bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                        </div>
+                        <span className="text-[8px] text-amber-700 dark:text-amber-400">Routine</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="w-8 h-8 rounded-md border-2 border-purple-500 bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                        </div>
+                        <span className="text-[8px] text-purple-700 dark:text-purple-400">FTS</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-0.5 relative">
+                        <div className="w-8 h-8 rounded-md border-2 border-pink-500 bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-pink-500" />
+                        </div>
+                        <span className="text-[8px] text-pink-700 dark:text-pink-400">Imgproxy</span>
+                        <div className="absolute -top-0.5 -right-0.5 px-0.5 py-0 rounded text-[6px] font-bold bg-orange-500 text-white leading-tight">SA</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs font-semibold text-orange-700 dark:text-orange-400 mt-1">Redis MQ</span>
-                <span className="text-[10px] text-muted-foreground">Stateful</span>
-              </div>
-
-              {/* Arrow: Redis MQ → Satellites */}
-              <div className="flex-1 flex items-center justify-center max-w-[60px]">
-                <svg className="w-full h-8" viewBox="0 0 60 32">
-                  <defs>
-                    <marker id="arrowhead3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
-                      <polygon points="0 0, 8 3, 0 6" className="fill-slate-400" />
-                    </marker>
-                  </defs>
-                  <line x1="0" y1="16" x2="50" y2="16" className="stroke-slate-400" strokeWidth="2" markerEnd="url(#arrowhead3)" />
-                  <text x="25" y="10" className="fill-slate-500 text-[8px]" textAnchor="middle">Consume</text>
-                </svg>
-              </div>
-
-              {/* Satellite Pods */}
-              <div className="flex flex-col items-center min-w-[180px]">
-                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Satellites</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-11 h-11 rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-900/30 flex items-center justify-center shadow-sm">
-                      <div className="w-3.5 h-3.5 rounded-full bg-green-500" />
-                    </div>
-                    <span className="text-[10px] font-medium text-green-700 dark:text-green-400">Worker</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-11 h-11 rounded-lg border-2 border-amber-500 bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center shadow-sm">
-                      <div className="w-3.5 h-3.5 rounded-full bg-amber-500" />
-                    </div>
-                    <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">Routine</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-11 h-11 rounded-lg border-2 border-purple-500 bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center shadow-sm">
-                      <div className="w-3.5 h-3.5 rounded-full bg-purple-500" />
-                    </div>
-                    <span className="text-[10px] font-medium text-purple-700 dark:text-purple-400">FTS</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1 relative">
-                    <div className="w-11 h-11 rounded-lg border-2 border-pink-500 bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center shadow-sm">
-                      <div className="w-3.5 h-3.5 rounded-full bg-pink-500" />
-                    </div>
-                    <span className="text-[10px] font-medium text-pink-700 dark:text-pink-400">Imgproxy</span>
-                    <div className="absolute -top-1 -right-1 px-1 py-0.5 rounded text-[7px] font-bold bg-orange-500 text-white">SA</div>
-                  </div>
+                <div className="text-center mt-2">
+                  <span className="text-[9px] text-orange-600 dark:text-orange-400 font-medium">Async Processing Zone</span>
                 </div>
               </div>
             </div>
@@ -294,7 +312,7 @@ export function TenantCoreArchitecture({ onNavigateToPCClient }: TenantCoreArchi
           </div>
           <div className="bg-card rounded-lg p-3 border">
             <div className="text-xs text-muted-foreground mb-1">Communication</div>
-            <div className="text-sm font-medium">HTTP + Redis Message Queue</div>
+            <div className="text-sm font-medium">Sync HTTP + Async MQ</div>
           </div>
           <div className="bg-card rounded-lg p-3 border">
             <div className="text-xs text-muted-foreground mb-1">Storage</div>

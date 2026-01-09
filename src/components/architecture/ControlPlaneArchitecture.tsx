@@ -8,7 +8,10 @@ import {
   ArrowRight,
   Workflow,
   LayoutDashboard,
-  Zap
+  Zap,
+  Globe,
+  Lock,
+  Monitor
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -80,15 +83,67 @@ export function ControlPlaneArchitecture() {
               </span>
             </div>
             
-            {/* Deploy Service */}
+            {/* Deploy Service - Extended with new responsibilities */}
             <Box 
               icon={<Container size={14} />} 
               title="Deploy Service" 
               subtitle="K8s Orchestrator" 
               variant="control"
               size="md"
-              tags={["Helm", "Secrets", "NS"]}
+              tags={["Helm", "Secrets", "NS", "Frontend", "DNS", "Cert"]}
             />
+          </div>
+
+          {/* Deploy Service Extended Responsibilities */}
+          <div className="bg-control-plane/10 rounded-lg p-3 border border-control-plane/20">
+            <div className="text-xs font-medium text-control-plane mb-2 flex items-center gap-2">
+              <Container size={12} />
+              Deploy Service Extended Responsibilities
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-[10px]">
+              <div className="bg-card rounded px-2 py-1.5 border flex items-center gap-1.5">
+                <Container size={10} className="text-blue-500" />
+                <div>
+                  <div className="font-medium">Backend</div>
+                  <div className="text-muted-foreground">Helm Deploy</div>
+                </div>
+              </div>
+              <div className="bg-card rounded px-2 py-1.5 border flex items-center gap-1.5">
+                <Monitor size={10} className="text-emerald-500" />
+                <div>
+                  <div className="font-medium">Frontend</div>
+                  <div className="text-muted-foreground">PC Client Pod</div>
+                </div>
+              </div>
+              <div className="bg-card rounded px-2 py-1.5 border flex items-center gap-1.5">
+                <Globe size={10} className="text-cyan-500" />
+                <div>
+                  <div className="font-medium">DNS</div>
+                  <div className="text-muted-foreground">AliDNS OpenAPI</div>
+                </div>
+              </div>
+              <div className="bg-card rounded px-2 py-1.5 border flex items-center gap-1.5">
+                <Lock size={10} className="text-violet-500" />
+                <div>
+                  <div className="font-medium">Certificate</div>
+                  <div className="text-muted-foreground">ACM Binding</div>
+                </div>
+              </div>
+              <div className="bg-card rounded px-2 py-1.5 border flex items-center gap-1.5">
+                <Workflow size={10} className="text-orange-500" />
+                <div>
+                  <div className="font-medium">Ingress</div>
+                  <div className="text-muted-foreground">Route Config</div>
+                </div>
+              </div>
+              <div className="bg-card rounded px-2 py-1.5 border flex items-center gap-1.5">
+                <Key size={10} className="text-amber-500" />
+                <div>
+                  <div className="font-medium">mTLS</div>
+                  <div className="text-muted-foreground">Origin Setup</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Connector to Storage */}
@@ -192,6 +247,12 @@ export function ControlPlaneArchitecture() {
                   <span className="text-[10px] font-mono font-medium">tenant-{tenant.id}</span>
                 </div>
                 <span className="text-[8px] text-muted-foreground capitalize">{tenant.status}</span>
+              </div>
+              {/* Added PC Client to tenant namespace */}
+              <div className="grid grid-cols-3 gap-1 mb-1">
+                <div className="text-[8px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1 py-0.5 rounded text-center font-medium col-span-3">
+                  PC Client
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-1">
                 {["Main", "Worker", "Routine", "FTS"].map((svc) => (

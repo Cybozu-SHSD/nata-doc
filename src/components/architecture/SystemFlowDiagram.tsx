@@ -8,8 +8,12 @@ import {
 
 const diagramDefinition = `
 graph TB
+    subgraph Client["👤 Client"]
+        REQ["API Request"]
+    end
+
     subgraph CoreSystem["🏠 Core Application"]
-        MAIN["🔷 <b>Main</b><br/>Business API & Data<br/><i>Full NestJS Stack</i>"]
+        MAIN["🔷 <b>Main</b><br/>API Gateway & Business Logic<br/><i>Full NestJS Stack</i>"]
     end
 
     subgraph Satellite["🛰️ Satellite Services"]
@@ -34,16 +38,22 @@ graph TB
         ES["🔍 <b>Elasticsearch</b><br/>Full-Text Search"]
     end
 
-    %% Main publishes events
-    MAIN --> |"Publish Event"| REDIS
+    %% Sync request flow - direct response
+    REQ --> |"HTTP Request"| MAIN
+    MAIN --> |"Response"| REQ
 
-    %% Satellite services consume messages
-    REDIS --> |"Consume"| WORKER
-    REDIS --> |"Consume"| ROUTINE
-    REDIS --> |"Consume"| FTS
-
-    %% Data access
+    %% Main handles sync requests directly with DB
     MAIN --> PG
+
+    %% Async tasks only - Main publishes to queue
+    MAIN -.-> |"Async Task<br/>(mail/export/index)"| REDIS
+
+    %% Satellite services consume async messages
+    REDIS -.-> |"Consume"| WORKER
+    REDIS -.-> |"Consume"| ROUTINE
+    REDIS -.-> |"Consume"| FTS
+
+    %% Satellite data access
     WORKER --> PG
     ROUTINE --> PG
     FTS --> ES
